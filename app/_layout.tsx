@@ -1,0 +1,80 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useFonts } from "expo-font";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect } from "react";
+import { Platform } from "react-native";
+import { ErrorBoundary } from "./error-boundary";
+import { useUserStore } from "@/store/userStore";
+
+export const unstable_settings = {
+  // Ensure that reloading on `/modal` keeps a back button present.
+  initialRouteName: "(tabs)",
+};
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+import * as SplashScreen from 'expo-splash-screen';
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const [loaded, error] = useFonts({
+    ...FontAwesome.font,
+  });
+
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+      throw error;
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
+  return (
+    <ErrorBoundary>
+      <RootLayoutNav />
+    </ErrorBoundary>
+  );
+}
+
+function RootLayoutNav() {
+  const { isAuthenticated, checkAuthStatus } = useUserStore();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if the user is authenticated
+    const checkAuth = async () => {
+      const isAuth = await checkAuthStatus();
+      
+      const inAuthGroup = segments[0] === 'auth';
+      
+      if (!isAuth && !inAuthGroup) {
+        // Redirect to the login page if not authenticated
+        router.replace('/auth/login');
+      } else if (isAuth && inAuthGroup) {
+        // Redirect to the home page if authenticated and on an auth page
+        router.replace('/');
+      }
+    };
+    
+    checkAuth();
+  }, [isAuthenticated, segments]);
+
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+      <Stack.Screen name="booking" options={{ headerShown: false }} />
+      <Stack.Screen name="lesson" options={{ headerShown: false }} />
+      <Stack.Screen name="auth" options={{ headerShown: false }} />
+    </Stack>
+  );
+}
