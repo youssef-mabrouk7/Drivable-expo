@@ -7,7 +7,6 @@ import { ErrorBoundary } from "./error-boundary";
 import { useUserStore } from "@/store/userStore";
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: "(tabs)",
 };
 
@@ -61,7 +60,7 @@ function RootLayoutNav() {
         router.replace('/auth/login');
       } else if (isAuth && inAuthGroup) {
         // Redirect to the home page if authenticated and on an auth page
-        router.replace('/');
+        router.replace('/(tabs)');
       }
     };
     
@@ -70,10 +69,9 @@ function RootLayoutNav() {
 
   return (
     <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-      <Stack.Screen name="booking" options={{ headerShown: false }} />
-      <Stack.Screen name="lesson" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: true, title: 'foush' }} />
+      <Stack.Screen name="booking" options={{ headerShown: true }} />
+      <Stack.Screen name="lesson" options={{ headerShown: true }} />
       <Stack.Screen name="auth" options={{ headerShown: false }} />
     </Stack>
   );

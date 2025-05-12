@@ -32,14 +32,14 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView 
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 112 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header with greeting */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Hello,</Text>
-            <Text style={styles.name}>Hi {user?.name?.split(' ')[0] || 'there'}</Text>
+            <Text style={styles.greeting}>Welcome back,</Text>
+            <Text style={styles.name}>{user?.name?.split(' ')[0] || 'Driver'}</Text>
           </View>
           <View style={styles.logoContainer}>
             <Text style={styles.logoText}>Dr</Text>
@@ -50,7 +50,7 @@ export default function HomeScreen() {
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search..."
+            placeholder="Search lessons..."
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -61,11 +61,11 @@ export default function HomeScreen() {
         
         {/* Upcoming events section */}
         <View style={styles.eventsHeader}>
-          <Text style={styles.eventsTitle}>Up-Coming Events</Text>
+          <Text style={styles.eventsTitle}>Upcoming Lessons</Text>
         </View>
         
         <View style={styles.schoolInfo}>
-          <Text style={styles.schoolName}>School Name</Text>
+          <Text style={styles.schoolName}>Driving School</Text>
           <View style={styles.schoolDetails}>
             <View style={styles.detailItem}>
               <MapPin size={16} color={colors.white} />
@@ -73,7 +73,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.detailItem}>
               <Clock size={16} color={colors.white} />
-              <Text style={styles.detailText}>Time</Text>
+              <Text style={styles.detailText}>Duration</Text>
             </View>
           </View>
         </View>
@@ -89,7 +89,7 @@ export default function HomeScreen() {
         ) : (
           <EmptyState
             title="No upcoming lessons"
-            description="Book your first driving lesson to get started on your journey to becoming a confident driver."
+            description="Book your first driving lesson to start your journey to becoming a confident driver."
             icon={<Calendar size={48} color={colors.textSecondary} />}
             actionLabel="Book a Lesson"
             onAction={handleBookLesson}
