@@ -1,6 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Navigator, Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import { ErrorBoundary } from "./error-boundary";
@@ -39,7 +39,7 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <NavigationContainer children={<RootLayoutNav />} />
+      <RootLayoutNav />
     </ErrorBoundary>
   );
 }
