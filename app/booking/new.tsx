@@ -1,55 +1,72 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
-import { Calendar, Clock, User, MapPin, FileText, ArrowRight } from 'lucide-react-native';
-import { useLessonStore } from '@/store/LessonStore';
-import { DatePicker } from '@/components/DatePicker';
-import { InstructorCard } from '@/components/InstructorCard';
-import { Button } from '@/components/Button';
-import { colors } from '@/constants/colors';
-import { instructors, drivingCenters, timeSlots, lessonTopics } from '@/constants/mockData';
-import { BookingFormData } from '@/types';
+import React, { useState } from "react";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Stack, useRouter } from "expo-router";
+import {
+  ArrowRight,
+  Calendar,
+  Clock,
+  FileText,
+  MapPin,
+  User,
+} from "lucide-react-native";
+import { useLessonStore } from "@/store/LessonStore";
+import { DatePicker } from "@/components/DatePicker";
+import { InstructorCard } from "@/components/InstructorCard";
+import { Button } from "@/components/Button";
+import { colors } from "@/constants/colors";
+import {
+  drivingCenters,
+  instructors,
+  lessonTopics,
+  timeSlots,
+} from "@/constants/mockData";
+import { BookingFormData } from "@/types";
 
 export default function BookingScreen() {
   const router = useRouter();
   const { bookLesson, isLoading } = useLessonStore();
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<BookingFormData>({
     date: new Date(),
     time: timeSlots[0],
     duration: 60,
-    instructorId: '',
-    centerId: drivingCenters[0].id,
     topic: lessonTopics[0],
-    notes: '',
+    notes: "",
   });
-  
+
   const handleDateChange = (date: Date) => {
-    setBookingData(prev => ({ ...prev, date }));
+    setBookingData((prev) => ({ ...prev, date }));
   };
-  
+
   const handleTimeSelect = (time: string) => {
-    setBookingData(prev => ({ ...prev, time }));
+    setBookingData((prev) => ({ ...prev, time }));
   };
-  
+
   const handleDurationSelect = (duration: number) => {
-    setBookingData(prev => ({ ...prev, duration }));
+    setBookingData((prev) => ({ ...prev, duration }));
   };
-  
+
   const handleInstructorSelect = (instructorId: string) => {
-    setBookingData(prev => ({ ...prev, instructorId }));
+    setBookingData((prev) => ({ ...prev, instructorId }));
   };
-  
+
   const handleTopicSelect = (topic: string) => {
-    setBookingData(prev => ({ ...prev, topic }));
+    setBookingData((prev) => ({ ...prev, topic }));
   };
-  
+
   const handleNotesChange = (notes: string) => {
-    setBookingData(prev => ({ ...prev, notes }));
+    setBookingData((prev) => ({ ...prev, notes }));
   };
-  
+
   const handleNextStep = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
@@ -57,7 +74,7 @@ export default function BookingScreen() {
       handleBookLesson();
     }
   };
-  
+
   const handlePreviousStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -65,16 +82,16 @@ export default function BookingScreen() {
       router.back();
     }
   };
-  
+
   const handleBookLesson = async () => {
     try {
       await bookLesson(bookingData);
-      router.replace('/app/booking/confirmation');
+      router.replace("/app/booking/confirmation");
     } catch (error) {
-      console.error('Failed to book lesson:', error);
+      console.error("Failed to book lesson:", error);
     }
   };
-  
+
   const renderStepIndicator = () => {
     return (
       <View style={styles.stepIndicator}>
@@ -91,7 +108,7 @@ export default function BookingScreen() {
       </View>
     );
   };
-  
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -101,16 +118,16 @@ export default function BookingScreen() {
               <Calendar size={24} color={colors.primary} />
               <Text style={styles.stepTitle}>Select Date & Time</Text>
             </View>
-            
+
             <DatePicker
               selectedDate={bookingData.date}
               onDateChange={handleDateChange}
               minDate={new Date()}
             />
-            
+
             <Text style={styles.sectionTitle}>Select Time</Text>
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.timeSlotContainer}
             >
@@ -134,7 +151,7 @@ export default function BookingScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            
+
             <Text style={styles.sectionTitle}>Lesson Duration</Text>
             <View style={styles.durationContainer}>
               <TouchableOpacity
@@ -161,7 +178,7 @@ export default function BookingScreen() {
                   $45
                 </Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[
                   styles.durationOption,
@@ -189,7 +206,7 @@ export default function BookingScreen() {
             </View>
           </>
         );
-      
+
       case 2:
         return (
           <>
@@ -197,11 +214,12 @@ export default function BookingScreen() {
               <User size={24} color={colors.primary} />
               <Text style={styles.stepTitle}>Select Instructor</Text>
             </View>
-            
+
             <Text style={styles.instructionText}>
-              Choose an instructor for your lesson. All our instructors are certified and experienced.
+              Choose an instructor for your lesson. All our instructors are
+              certified and experienced.
             </Text>
-            
+
             {instructors.map((instructor) => (
               <InstructorCard
                 key={instructor.id}
@@ -212,7 +230,7 @@ export default function BookingScreen() {
             ))}
           </>
         );
-      
+
       case 3:
         return (
           <>
@@ -220,10 +238,10 @@ export default function BookingScreen() {
               <FileText size={24} color={colors.primary} />
               <Text style={styles.stepTitle}>Lesson Details</Text>
             </View>
-            
+
             <Text style={styles.sectionTitle}>Select Topic</Text>
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.topicContainer}
             >
@@ -247,55 +265,60 @@ export default function BookingScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            
+
             <Text style={styles.sectionTitle}>Driving Center</Text>
             <View style={styles.centerCard}>
               <MapPin size={20} color={colors.primary} />
               <View style={styles.centerInfo}>
                 <Text style={styles.centerName}>
-                  {drivingCenters.find(c => c.id === bookingData.centerId)?.name}
+                  {drivingCenters.find((c) => c.id === bookingData.centerId)
+                    ?.name}
                 </Text>
                 <Text style={styles.centerAddress}>
-                  {drivingCenters.find(c => c.id === bookingData.centerId)?.address}
+                  {drivingCenters.find((c) => c.id === bookingData.centerId)
+                    ?.address}
                 </Text>
               </View>
             </View>
-            
+
             <Text style={styles.sectionTitle}>Booking Summary</Text>
             <View style={styles.summaryCard}>
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Date:</Text>
                 <Text style={styles.summaryValue}>
-                  {bookingData.date.toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
+                  {bookingData.date.toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
                   })}
                 </Text>
               </View>
-              
+
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Time:</Text>
                 <Text style={styles.summaryValue}>{bookingData.time}</Text>
               </View>
-              
+
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Duration:</Text>
-                <Text style={styles.summaryValue}>{bookingData.duration} minutes</Text>
+                <Text style={styles.summaryValue}>
+                  {bookingData.duration} minutes
+                </Text>
               </View>
-              
+
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Instructor:</Text>
                 <Text style={styles.summaryValue}>
-                  {instructors.find(i => i.id === bookingData.instructorId)?.name || 'Any available'}
+                  {instructors.find((i) => i.id === bookingData.instructorId)
+                    ?.name || "Any available"}
                 </Text>
               </View>
-              
+
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Topic:</Text>
                 <Text style={styles.summaryValue}>{bookingData.topic}</Text>
               </View>
-              
+
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Price:</Text>
                 <Text style={[styles.summaryValue, styles.priceValue]}>
@@ -305,21 +328,21 @@ export default function BookingScreen() {
             </View>
           </>
         );
-      
+
       default:
         return null;
     }
   };
-  
+
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <Stack.Screen
         options={{
-          title: 'Book a Lesson',
-          headerBackTitle: 'Back',
+          title: "Book a Lesson",
+          headerBackTitle: "Back",
         }}
       />
-      
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -328,7 +351,7 @@ export default function BookingScreen() {
         {renderStepIndicator()}
         {renderStepContent()}
       </ScrollView>
-      
+
       <View style={styles.footer}>
         <Button
           title="Back"
@@ -336,13 +359,15 @@ export default function BookingScreen() {
           onPress={handlePreviousStep}
           style={{ flex: 1, marginRight: 8 }}
         />
-        
+
         <Button
           title={currentStep === 3 ? "Confirm Booking" : "Next"}
           variant="primary"
           loading={isLoading}
           onPress={handleNextStep}
-          icon={currentStep < 3 ? <ArrowRight size={20} color="white" /> : undefined}
+          icon={currentStep < 3
+            ? <ArrowRight size={20} color="white" />
+            : undefined}
           style={{ flex: 1, marginLeft: 8 }}
         />
       </View>
@@ -363,8 +388,8 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Extra padding for footer
   },
   stepIndicator: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginBottom: 24,
   },
   stepDot: {
@@ -382,19 +407,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   stepHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   stepTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
     marginLeft: 12,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
     marginTop: 16,
     marginBottom: 12,
@@ -420,19 +445,19 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   selectedTimeSlotText: {
-    color: 'white',
-    fontWeight: '500',
+    color: "white",
+    fontWeight: "500",
   },
   durationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   durationOption: {
     flex: 1,
     padding: 16,
     borderRadius: 12,
     backgroundColor: colors.card,
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -443,19 +468,19 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
     marginBottom: 4,
   },
   selectedDurationText: {
-    color: 'white',
+    color: "white",
   },
   durationPrice: {
     fontSize: 14,
     color: colors.textSecondary,
   },
   selectedDurationPrice: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: "rgba(255, 255, 255, 0.8)",
   },
   instructionText: {
     fontSize: 16,
@@ -484,15 +509,15 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   selectedTopicText: {
-    color: 'white',
-    fontWeight: '500',
+    color: "white",
+    fontWeight: "500",
   },
   centerCard: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     backgroundColor: colors.card,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
   },
   centerInfo: {
@@ -500,7 +525,7 @@ const styles = StyleSheet.create({
   },
   centerName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
     marginBottom: 4,
   },
@@ -514,8 +539,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
   summaryLabel: {
@@ -524,20 +549,20 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: colors.text,
   },
   priceValue: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 16,
   },
   footer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     backgroundColor: colors.background,
     borderTopWidth: 1,
@@ -557,7 +582,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: -4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
-      }
+      },
     }),
   },
 });
+

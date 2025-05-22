@@ -1,13 +1,13 @@
-declare module "expo-router" {
+export declare module "expo-router" {
   type RouteNames =
     | "/"
     | "/home"
-    | "/(tabs)"
-    | "/(tabs)/"
-    | "/(tabs)/index"
-    | "/(tabs)/schedule"
-    | "/(tabs)/progress"
-    | "/(tabs)/profile"
+    | "/tabs"
+    | "/tabs/"
+    | "/tabs/index"
+    | "/tabs/schedule"
+    | "/tabs/progress"
+    | "/tabs/profile"
     | "/auth/login"
     | "/auth/register"
     | "/profile/personal-info"
@@ -37,8 +37,14 @@ declare module "expo-router" {
   };
 
   export function useRouter(): {
-    push: (route: RouteNames | RouteObject, params?: RouteParams[RouteNames]) => void;
-    replace: (route: RouteNames | RouteObject, params?: RouteParams[RouteNames]) => void;
+    push: (
+      route: RouteNames | RouteObject,
+      params?: RouteParams[RouteNames],
+    ) => void;
+    replace: (
+      route: RouteNames | RouteObject,
+      params?: RouteParams[RouteNames],
+    ) => void;
     back: () => void;
   };
 
@@ -49,4 +55,4 @@ declare module "expo-router" {
   };
 
   export const Link: React.FC<LinkProps>;
-} 
+}

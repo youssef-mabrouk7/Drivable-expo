@@ -2,16 +2,15 @@
 
 export type Lesson = {
   id: string;
-  instructorId: string;
-  centerId: string;
   date: Date;
   duration: number; // in minutes
-  status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
+  status: "confirmed" | "pending" | "completed" | "cancelled";
   topic: string;
   notes?: string;
   price: number;
   rating?: number;
   feedback?: string;
+  location: string;
 };
 
 export type Instructor = {
@@ -43,7 +42,7 @@ export type User = {
   name: string;
   email: string;
   phone?: string;
-  licenseType?: 'learner' | 'provisional' | 'full';
+  licenseType?: "learner" | "provisional" | "full";
   lessonsCompleted: number;
   profileImage?: string;
   preferences?: {
@@ -58,10 +57,9 @@ export type BookingFormData = {
   date: Date;
   time: string;
   duration: number;
-  instructorId: string;
-  centerId: string;
   topic: string;
   notes?: string;
+  location: string;
 };
 
 // API response types
@@ -96,3 +94,4 @@ export type PaginatedResponse<T> = {
     total: number;
   };
 };
+

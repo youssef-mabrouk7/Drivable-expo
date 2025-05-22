@@ -1,36 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Calendar, Plus } from 'lucide-react-native';
-import { useLessonStore } from '@/store/LessonStore';
-import { useUserStore } from '@/store/userStore';
-import { LessonCard } from '@/components/LessonCard';
-import { EmptyState } from '@/components/EmptyState';
-import { colors } from '@/constants/colors';
+import React, { useEffect, useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Calendar, Plus, Search } from "lucide-react-native";
+import { useLessonStore } from "@/store/LessonStore";
+import { useUserStore } from "@/store/userStore";
+import { LessonCard } from "@/components/LessonCard";
+import { EmptyState } from "@/components/EmptyState";
+import { colors } from "@/constants/colors";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useUserStore();
   const { upcomingLessons, fetchLessons, isLoading } = useLessonStore();
-  const [searchQuery, setSearchQuery] = useState('');
-  
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     fetchLessons();
   }, [fetchLessons]);
-  
+
   const handleBookLesson = () => {
-    router.push('/booking/new');
+    router.push("/booking/new");
   };
-  
+
   const handleViewSchedule = () => {
-    router.push('/schedule');
+    router.push("/schedule");
   };
-  
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 112 }]}
         showsVerticalScrollIndicator={false}
@@ -39,13 +46,15 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.name}>{user?.name?.split(' ')[0] || 'Driver'}</Text>
+            <Text style={styles.name}>
+              {user?.name?.split(" ")[0] || "Driver"}
+            </Text>
           </View>
           <View style={styles.logoContainer}>
             <Text style={styles.logoText}>Dr</Text>
           </View>
         </View>
-        
+
         {/* Search bar */}
         <View style={styles.searchContainer}>
           <TextInput
@@ -58,12 +67,12 @@ export default function HomeScreen() {
             <Search size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
-        
+
         {/* Upcoming events section */}
         <View style={styles.eventsHeader}>
           <Text style={styles.eventsTitle}>Upcoming Lessons</Text>
         </View>
-        
+
         <View style={styles.schoolInfo}>
           <Text style={styles.schoolName}>Driving School</Text>
           <View style={styles.schoolDetails}>
@@ -77,28 +86,32 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-        
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading your lessons...</Text>
-          </View>
-        ) : upcomingLessons.length > 0 ? (
-          upcomingLessons.map(lesson => (
-            <LessonCard key={lesson.id} lesson={lesson} />
-          ))
-        ) : (
-          <EmptyState
-            title="No upcoming lessons"
-            description="Book your first driving lesson to start your journey to becoming a confident driver."
-            icon={<Calendar size={48} color={colors.textSecondary} />}
-            actionLabel="Book a Lesson"
-            onAction={handleBookLesson}
-          />
-        )}
+
+        {isLoading
+          ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Loading your lessons...</Text>
+            </View>
+          )
+          : upcomingLessons
+          ? (
+            upcomingLessons.map((lesson) => (
+              <LessonCard key={lesson.id} lesson={lesson} />
+            ))
+          )
+          : (
+            <EmptyState
+              title="No upcoming lessons"
+              description="Book your first driving lesson to start your journey to becoming a confident driver."
+              icon={<Calendar size={48} color={colors.textSecondary} />}
+              actionLabel="Book a Lesson"
+              onAction={handleBookLesson}
+            />
+          )}
       </ScrollView>
-      
+
       {/* Floating action button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.fab}
         onPress={handleBookLesson}
       >
@@ -132,9 +145,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   greeting: {
@@ -143,7 +156,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colors.text,
   },
   logoContainer: {
@@ -151,16 +164,16 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: colors.secondary,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   logoText: {
     color: colors.white,
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   searchContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
   },
   searchInput: {
@@ -179,8 +192,8 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
   },
@@ -193,7 +206,7 @@ const styles = StyleSheet.create({
   eventsTitle: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   schoolInfo: {
     backgroundColor: colors.primary,
@@ -206,16 +219,16 @@ const styles = StyleSheet.create({
   schoolName: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 8,
   },
   schoolDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   detailText: {
     color: colors.white,
@@ -234,22 +247,22 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     padding: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loadingText: {
     fontSize: 16,
     color: colors.textSecondary,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
-    alignSelf: 'center',
+    alignSelf: "center",
     width: 60,
     height: 60,
     borderRadius: 30,
     backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 5,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
@@ -257,3 +270,4 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
 });
+

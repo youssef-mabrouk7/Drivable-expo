@@ -11,7 +11,8 @@ export const unstable_settings = {
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-import * as SplashScreen from 'expo-splash-screen';
+import * as SplashScreen from "expo-splash-screen";
+import { NavigationContainer } from "@react-navigation/native";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -38,7 +39,7 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <RootLayoutNav />
+      <NavigationContainer children={<RootLayoutNav />} />
     </ErrorBoundary>
   );
 }
@@ -52,27 +53,35 @@ function RootLayoutNav() {
     // Check if the user is authenticated
     const checkAuth = async () => {
       const isAuth = await checkAuthStatus();
-      
-      const inAuthGroup = segments[0] === 'auth';
-      
+
+      const inAuthGroup = segments[0] === "auth";
+
       if (!isAuth && !inAuthGroup) {
         // Redirect to the login page if not authenticated
-        router.replace('/auth/login');
+        router.replace("/tabs");
       } else if (isAuth && inAuthGroup) {
         // Redirect to the home page if authenticated and on an auth page
-        router.replace('/(tabs)');
+        router.replace("/tabs");
       }
     };
-    
-    checkAuth();
+
+    // checkAuth();
   }, [isAuthenticated, segments]);
 
   return (
     <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: true, title: 'foush' }} />
-      <Stack.Screen name="booking" options={{ headerShown: true }} />
-      <Stack.Screen name="lesson" options={{ headerShown: true }} />
-      <Stack.Screen name="auth" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="tabs"
+        options={{ headerShown: true, title: "home" }}
+      />
+      <Stack.Screen
+        name="booking/confirmation"
+        options={{ headerShown: true }}
+      />
+      <Stack.Screen name="booking/new" options={{ headerShown: true }} />
+      <Stack.Screen name="lesson/[id]" options={{ headerShown: true }} />
+      <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/index" options={{ headerShown: false }} />
     </Stack>
   );
 }
