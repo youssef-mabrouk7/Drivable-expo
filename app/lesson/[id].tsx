@@ -23,7 +23,7 @@ import { Lesson, Instructor, DrivingCenter } from '@/types';
 
 export default function LessonDetailScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<"D:/driveable2/app/lesson/[id]">();
+  const params = useLocalSearchParams();
   const { id } = params; // Now TypeScript knows that 'id' exists
   
   const { upcomingLessons, pastLessons, cancelLesson, isLoading } = useLessonStore();
@@ -61,7 +61,7 @@ export default function LessonDetailScreen() {
     if (Platform.OS === 'web') {
       if (confirm("Are you sure you want to cancel this lesson?")) {
         cancelLesson(lesson.id);
-        router.replace('/schedule');
+        router.replace('/booking/cancellation-confirmation');
       }
     } else {
       Alert.alert(
@@ -76,7 +76,7 @@ export default function LessonDetailScreen() {
             text: "Yes, Cancel", 
             onPress: async () => {
               await cancelLesson(lesson.id);
-              router.replace('/schedule');
+              router.replace('/booking/cancellation-confirmation');
             },
             style: "destructive"
           }
@@ -257,6 +257,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: 32,
   },
   loadingContainer: {
     flex: 1,
@@ -404,10 +405,12 @@ const styles = StyleSheet.create({
   contactContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
   },
   contactButton: {
     flex: 1,
-    marginHorizontal: 4,
+    minWidth: 0,
   },
   cancelButton: {
     marginTop: 8,

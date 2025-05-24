@@ -22,23 +22,10 @@ interface UserState {
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
-      user: {
-        id: '1',
-        name: 'James Wilson',
-        email: 'james.wilson@example.com',
-        phone: '(555) 123-4567',
-        licenseType: 'learner',
-        lessonsCompleted: 5,
-        profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80',
-        preferences: {
-          preferredInstructorId: '1',
-          preferredDays: ['Mon', 'Wed', 'Fri'],
-          preferredTimes: ['4:00 PM', '5:00 PM']
-        }
-      },
+      user: null,
       isLoading: false,
       error: null,
-      isAuthenticated: true, // Set to true for demo purposes
+      isAuthenticated: false,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
@@ -54,10 +41,10 @@ export const useUserStore = create<UserState>()(
             set({ 
               user: {
                 id: '1',
-                name: 'James Wilson',
+                name: 'Test User',
                 email: email,
                 licenseType: 'learner',
-                lessonsCompleted: 5,
+                lessonsCompleted: 0,
                 profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80',
               },
               isLoading: false,

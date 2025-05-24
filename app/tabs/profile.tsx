@@ -6,8 +6,6 @@ import { useRouter } from 'expo-router';
 import { 
   User, 
   Settings, 
-  Clock, 
-  Calendar, 
   CreditCard, 
   Bell, 
   HelpCircle, 
@@ -60,21 +58,6 @@ export default function ProfileScreen() {
           icon: <Settings size={20} color={colors.primary} />,
           label: 'Preferences',
           onPress: () => router.push('/profile/preferences'),
-        },
-      ],
-    },
-    {
-      title: 'Lessons',
-      items: [
-        {
-          icon: <Clock size={20} color={colors.primary} />,
-          label: 'Lesson History',
-          onPress: () => router.push('/schedule'),
-        },
-        {
-          icon: <Calendar size={20} color={colors.primary} />,
-          label: 'Upcoming Lessons',
-          onPress: () => router.push('/schedule'),
         },
         {
           icon: <CreditCard size={20} color={colors.primary} />,
@@ -167,6 +150,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: 32,
   },
   scrollView: {
     flex: 1,

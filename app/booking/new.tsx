@@ -69,7 +69,7 @@ export default function BookingScreen() {
   const handleBookLesson = async () => {
     try {
       await bookLesson(bookingData);
-      router.replace('/app/booking/confirmation');
+      router.replace('/booking/confirmation');
     } catch (error) {
       console.error('Failed to book lesson:', error);
     }
@@ -354,6 +354,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: 32,
   },
   scrollView: {
     flex: 1,

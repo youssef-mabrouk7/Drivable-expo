@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Image } from 'expo-image';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Calendar, Plus } from 'lucide-react-native';
@@ -9,6 +8,7 @@ import { useUserStore } from '@/store/userStore';
 import { LessonCard } from '@/components/LessonCard';
 import { EmptyState } from '@/components/EmptyState';
 import { colors } from '@/constants/colors';
+import Svg, { Rect, Path } from 'react-native-svg';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -42,7 +42,11 @@ export default function HomeScreen() {
             <Text style={styles.name}>{user?.name?.split(' ')[0] || 'Driver'}</Text>
           </View>
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>Dr</Text>
+            <Image 
+              source={require('@/assets/images/playstore.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
         </View>
         
@@ -124,6 +128,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: 32,
   },
   scrollView: {
     flex: 1,
@@ -149,15 +154,12 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 40,
     height: 40,
-    backgroundColor: colors.secondary,
-    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoText: {
-    color: colors.white,
-    fontSize: 20,
-    fontWeight: 'bold',
+  logo: {
+    width: 40,
+    height: 40,
   },
   searchContainer: {
     flexDirection: 'row',

@@ -1,38 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react-native';
 import { useUserStore } from '@/store/userStore';
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/Button';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
+  useEffect(() => {
+    console.log("Register Screen rendered");
+  }, []);
+
   const router = useRouter();
-  const { login, isLoading, error } = useUserStore();
+  const { register, isLoading, error } = useUserStore();
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  const handleLogin = async () => {
+  const handleRegister = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      // Handle password mismatch
+      return;
+    }
+    
     try {
-      await login(email, password);
-      router.replace('/tabs');
+      await register({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+      });
+      router.replace('/tabs/schedule');
     } catch (error) {
       // Error is handled in the store
     }
   };
   
-  const handleRegister = () => {
-    router.push('/auth/register');
+  const handleLogin = () => {
+    router.push('/auth/login');
   };
   
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <Stack.Screen 
         options={{ 
-          title: 'Login',
+          title: 'Register',
           headerShown: false,
         }} 
       />
@@ -54,8 +73,8 @@ export default function LoginScreen() {
             <Text style={styles.appName}>Driveable</Text>
           </View>
           
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue your journey</Text>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Sign up to start your driving journey</Text>
           
           {error && (
             <View style={styles.errorContainer}>
@@ -64,15 +83,39 @@ export default function LoginScreen() {
           )}
           
           <View style={styles.inputContainer}>
+            <User size={20} color={colors.primary} />
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              placeholderTextColor={colors.primary}
+              value={formData.name}
+              onChangeText={(text) => setFormData({ ...formData, name: text })}
+              autoCapitalize="words"
+            />
+          </View>
+          
+          <View style={styles.inputContainer}>
             <Mail size={20} color={colors.primary} />
             <TextInput
               style={styles.input}
               placeholder="Email"
               placeholderTextColor={colors.primary}
-              value={email}
-              onChangeText={setEmail}
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
               autoCapitalize="none"
               keyboardType="email-address"
+            />
+          </View>
+          
+          <View style={styles.inputContainer}>
+            <Phone size={20} color={colors.primary} />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              placeholderTextColor={colors.primary}
+              value={formData.phone}
+              onChangeText={(text) => setFormData({ ...formData, phone: text })}
+              keyboardType="phone-pad"
             />
           </View>
           
@@ -82,8 +125,8 @@ export default function LoginScreen() {
               style={styles.input}
               placeholder="Password"
               placeholderTextColor={colors.primary}
-              value={password}
-              onChangeText={setPassword}
+              value={formData.password}
+              onChangeText={(text) => setFormData({ ...formData, password: text })}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity
@@ -98,23 +141,41 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
           
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <Lock size={20} color={colors.primary} />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              placeholderTextColor={colors.primary}
+              value={formData.confirmPassword}
+              onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+              secureTextEntry={!showConfirmPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={styles.eyeIcon}
+            >
+              {showConfirmPassword ? (
+                <EyeOff size={20} color={colors.primary} />
+              ) : (
+                <Eye size={20} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+          </View>
           
           <Button
-            title="Sign In"
+            title="Create Account"
             variant="primary"
             size="large"
             loading={isLoading}
-            onPress={handleLogin}
-            style={styles.loginButton}
+            onPress={handleRegister}
+            style={styles.registerButton}
           />
           
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={handleRegister}>
-              <Text style={styles.registerLink}>Create Account</Text>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <TouchableOpacity onPress={handleLogin}>
+              <Text style={styles.loginLink}>Login</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -186,32 +247,23 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
     fontSize: 16,
-    color: colors.text,
+    color: colors.primary,
   },
   eyeIcon: {
     padding: 4,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
+  registerButton: {
     marginBottom: 24,
   },
-  forgotPasswordText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  loginButton: {
-    marginBottom: 24,
-  },
-  registerContainer: {
+  loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  registerText: {
+  loginText: {
     color: colors.textSecondary,
     fontSize: 14,
   },
-  registerLink: {
+  loginLink: {
     color: colors.primary,
     fontSize: 14,
     fontWeight: '500',
