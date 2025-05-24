@@ -49,8 +49,8 @@ export default function RegisterScreen() {
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        age: "18", // Default age
-        handicapType: 1,
+        age: "30", // Default age
+        handicapType: 0,
         transmissionType: 0, // Default to automatic
         role: 1,
       });

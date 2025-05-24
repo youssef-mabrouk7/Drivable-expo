@@ -121,7 +121,7 @@ export const useUserStore = create<UserState>()(
         try {
           // In a real app with backend integration:
           // await authAPI.logout();
-          // await AsyncStorage.removeItem('auth_token');
+          await AsyncStorage.removeItem("auth_token");
 
           // Simulate network delay
           await new Promise((resolve) => setTimeout(resolve, 500));
