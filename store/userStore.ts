@@ -24,10 +24,13 @@ export const useUserStore = create<UserState>()(
     (set, get) => ({
       user: {
         id: "1",
-        name: "James Wilson",
+        firstName: "",
+        lastName: "",
+        password: "",
+        transmissionType: 0,
+        age: "0",
         email: "james.wilson@example.com",
         phone: "(555) 123-4567",
-        licenseType: "learner",
         lessonsCompleted: 5,
         profileImage:
           "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
@@ -47,17 +50,19 @@ export const useUserStore = create<UserState>()(
           // In a real app with backend integration:
           // const response = await authAPI.login(email, password);
           // await AsyncStorage.setItem('auth_token', response.token);
+          const response = await authAPI.login(email, password);
+          await AsyncStorage.setItem("auth_token", response.token);
 
-          // For now, simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 800));
-
-          if (email && password) {
+          if (response.token) {
             set({
               user: {
                 id: "1",
-                name: "James Wilson",
+                firstName: "James",
+                lastName: "Wilson",
+                password: "",
+                transmissionType: 0, // 0 for automatic
+                age: "30",
                 email: email,
-                licenseType: "learner",
                 lessonsCompleted: 5,
                 profileImage:
                   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
@@ -66,7 +71,7 @@ export const useUserStore = create<UserState>()(
               isAuthenticated: true,
             });
           } else {
-            throw new Error("Invalid credentials");
+            throw new Error("No token provided");
           }
         } catch (error) {
           console.error("Login error:", error);
@@ -82,18 +87,18 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
         try {
           // In a real app with backend integration:
-          // const response = await authAPI.register(userData);
-          // await AsyncStorage.setItem('auth_token', response.token);
-
-          // For now, simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 800));
+          const response = await authAPI.register(userData);
+          await AsyncStorage.setItem("auth_token", response.token);
 
           set({
             user: {
               id: "1",
-              name: userData.name || "New User",
+              firstName: userData.firstName || "John",
+              lastName: userData.lastName || "Doe",
+              password: userData.password || "password123",
+              transmissionType: userData.transmissionType || 0,
+              age: userData.age || "25",
               email: userData.email || "user@example.com",
-              licenseType: "learner",
               lessonsCompleted: 0,
               ...userData,
             },
@@ -213,4 +218,3 @@ export const useUserStore = create<UserState>()(
     },
   ),
 );
-

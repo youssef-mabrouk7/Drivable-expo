@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react-native';
-import { useUserStore } from '@/store/userStore';
-import { colors } from '@/constants/colors';
-import { Button } from '@/components/Button';
+import React, { useEffect, useState } from "react";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react-native";
+import { useUserStore } from "@/store/userStore";
+import { colors } from "@/constants/colors";
+import { Button } from "@/components/Button";
 
 export default function RegisterScreen() {
   useEffect(() => {
@@ -14,50 +24,57 @@ export default function RegisterScreen() {
 
   const router = useRouter();
   const { register, isLoading, error } = useUserStore();
-  
+  const [formError, setFormError] = useState("");
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const handleRegister = async () => {
     if (formData.password !== formData.confirmPassword) {
-      // Handle password mismatch
+      setFormError("Passwords do not match");
       return;
     }
-    
+
     try {
       await register({
-        name: formData.name,
         email: formData.email,
-        phone: formData.phone,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        age: "18", // Default age
+        handicapType: 1,
+        transmissionType: 0, // Default to automatic
+        role: 1,
       });
-      router.replace('/tabs/schedule');
+      router.replace("/tabs/schedule");
     } catch (error) {
-      // Error is handled in the store
+      return;
     }
   };
-  
+
   const handleLogin = () => {
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
-  
+
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
-        options={{ 
-          title: 'Register',
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <Stack.Screen
+        options={{
+          title: "Register",
           headerShown: false,
-        }} 
+        }}
       />
-      
+
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingView}
       >
         <ScrollView
@@ -65,35 +82,58 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.logoContainer}>
-            <Image 
-              source={require('@/assets/images/playstore.png')}
+            <Image
+              source={require("@/assets/images/playstore.png")}
               style={styles.logo}
               resizeMode="contain"
             />
             <Text style={styles.appName}>Driveable</Text>
           </View>
-          
+
           <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to start your driving journey</Text>
-          
+          <Text style={styles.subtitle}>
+            Sign up to start your driving journey
+          </Text>
+
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
-          
+          {formError
+            ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{formError}</Text>
+              </View>
+            )
+            : null}
+
           <View style={styles.inputContainer}>
             <User size={20} color={colors.primary} />
             <TextInput
               style={styles.input}
-              placeholder="Full Name"
+              placeholder="First Name"
               placeholderTextColor={colors.primary}
-              value={formData.name}
-              onChangeText={(text) => setFormData({ ...formData, name: text })}
+              value={formData.firstName}
+              onChangeText={(text) =>
+                setFormData({ ...formData, firstName: text })}
               autoCapitalize="words"
             />
           </View>
-          
+
+          <View style={styles.inputContainer}>
+            <User size={20} color={colors.primary} />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              placeholderTextColor={colors.primary}
+              value={formData.lastName}
+              onChangeText={(text) =>
+                setFormData({ ...formData, lastName: text })}
+              autoCapitalize="words"
+            />
+          </View>
+
           <View style={styles.inputContainer}>
             <Mail size={20} color={colors.primary} />
             <TextInput
@@ -106,7 +146,7 @@ export default function RegisterScreen() {
               keyboardType="email-address"
             />
           </View>
-          
+
           <View style={styles.inputContainer}>
             <Phone size={20} color={colors.primary} />
             <TextInput
@@ -118,7 +158,7 @@ export default function RegisterScreen() {
               keyboardType="phone-pad"
             />
           </View>
-          
+
           <View style={styles.inputContainer}>
             <Lock size={20} color={colors.primary} />
             <TextInput
@@ -126,21 +166,20 @@ export default function RegisterScreen() {
               placeholder="Password"
               placeholderTextColor={colors.primary}
               value={formData.password}
-              onChangeText={(text) => setFormData({ ...formData, password: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, password: text })}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeIcon}
             >
-              {showPassword ? (
-                <EyeOff size={20} color={colors.primary} />
-              ) : (
-                <Eye size={20} color={colors.primary} />
-              )}
+              {showPassword
+                ? <EyeOff size={20} color={colors.primary} />
+                : <Eye size={20} color={colors.primary} />}
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.inputContainer}>
             <Lock size={20} color={colors.primary} />
             <TextInput
@@ -148,21 +187,20 @@ export default function RegisterScreen() {
               placeholder="Confirm Password"
               placeholderTextColor={colors.primary}
               value={formData.confirmPassword}
-              onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, confirmPassword: text })}
               secureTextEntry={!showConfirmPassword}
             />
             <TouchableOpacity
               onPress={() => setShowConfirmPassword(!showConfirmPassword)}
               style={styles.eyeIcon}
             >
-              {showConfirmPassword ? (
-                <EyeOff size={20} color={colors.primary} />
-              ) : (
-                <Eye size={20} color={colors.primary} />
-              )}
+              {showConfirmPassword
+                ? <EyeOff size={20} color={colors.primary} />
+                : <Eye size={20} color={colors.primary} />}
             </TouchableOpacity>
           </View>
-          
+
           <Button
             title="Create Account"
             variant="primary"
@@ -171,9 +209,9 @@ export default function RegisterScreen() {
             onPress={handleRegister}
             style={styles.registerButton}
           />
-          
+
           <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
+            <Text style={styles.loginText}>Already have an account?</Text>
             <TouchableOpacity onPress={handleLogin}>
               <Text style={styles.loginLink}>Login</Text>
             </TouchableOpacity>
@@ -195,10 +233,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   logo: {
@@ -208,12 +246,12 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colors.text,
     marginBottom: 8,
   },
@@ -223,7 +261,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   errorContainer: {
-    backgroundColor: colors.error + '20',
+    backgroundColor: colors.error + "20",
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
@@ -233,8 +271,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.border,
@@ -256,8 +294,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   loginText: {
     color: colors.textSecondary,
@@ -266,6 +304,7 @@ const styles = StyleSheet.create({
   loginLink: {
     color: colors.primary,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
-}); 
+});
+

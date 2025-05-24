@@ -39,10 +39,14 @@ export type DrivingCenter = {
 
 export type User = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  age: string;
+  transmissionType: number; // 0 for automatic, 1 for manual
   phone?: string;
-  licenseType?: "learner" | "provisional" | "full";
+  password?: string;
+  role?: number;
   lessonsCompleted: number;
   profileImage?: string;
   preferences?: {
@@ -51,6 +55,7 @@ export type User = {
     preferredDays?: string[];
     preferredTimes?: string[];
   };
+  handicapType?: number;
 };
 
 export type BookingFormData = {
@@ -94,4 +99,3 @@ export type PaginatedResponse<T> = {
     total: number;
   };
 };
-

@@ -8,7 +8,7 @@ import {
 } from "@/types";
 
 // Base API URL - would be replaced with actual backend URL
-const API_URL = "http://localhost:8080/api/v1";
+const API_URL = "http://192.168.1.101:8080/api/v1";
 
 // Helper to get auth token
 const getToken = async () => {
@@ -47,6 +47,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 
 // Auth API
 export const authAPI = {
+  //make it returns type user
   login: async (email: string, password: string) => {
     return apiRequest("/auth/login", {
       method: "POST",
@@ -55,7 +56,7 @@ export const authAPI = {
   },
 
   register: async (userData: Partial<User>) => {
-    return apiRequest("/auth/register", {
+    return apiRequest("/auth/signup", {
       method: "POST",
       body: JSON.stringify(userData),
     });
@@ -149,4 +150,3 @@ export const profileAPI = {
     });
   },
 };
-
