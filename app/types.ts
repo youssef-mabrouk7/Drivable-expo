@@ -1,6 +1,8 @@
 declare module "expo-router" {
   type RouteNames =
     | "/"
+    | "/auth/login"
+    | "/auth/register"
     | "/home"
     | "/tabs"
     | "/tabs/"

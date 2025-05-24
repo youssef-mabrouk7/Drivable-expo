@@ -1,21 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { CheckCircle, Calendar, Home } from 'lucide-react-native';
 import { Button } from '@/components/Button';
 import { colors } from '@/constants/colors';
 
 export default function ConfirmationScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
   
   const handleViewSchedule = () => {
-    router.replace('/schedule');
+    router.replace('/tabs/schedule');
   };
   
   const handleGoHome = () => {
-    router.replace('/');
+    router.replace('/tabs');
   };
   
   return (
@@ -64,6 +63,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: 32,
   },
   content: {
     flex: 1,

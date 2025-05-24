@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: 32,
   },
   header: {
     flexDirection: "row",
@@ -128,6 +129,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
+    paddingTop: 16,
   },
   title: {
     fontSize: 20,
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingTop: 0,
+    paddingTop: 16,
   },
   loadingContainer: {
     padding: 24,

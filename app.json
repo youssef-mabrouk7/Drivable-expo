@@ -1,23 +1,27 @@
 {
   "expo": {
-    "name": "expo-app",
-    "slug": "expo-app",
+    "name": "Driveable",
+    "slug": "driveable",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "myapp",
+    "scheme": "driveable",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
+      "image": "./assets/images/playstore.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.driveable.app"
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/playstore.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.driveable.app"
     },
     "plugins": ["expo-router"],
     "experiments": {
