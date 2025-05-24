@@ -1,44 +1,54 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
-import { useUserStore } from '@/store/userStore';
-import { colors } from '@/constants/colors';
-import { Button } from '@/components/Button';
+import React, { useState } from "react";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
+import { useUserStore } from "@/store/userStore";
+import { colors } from "@/constants/colors";
+import { Button } from "@/components/Button";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, isLoading, error } = useUserStore();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const handleLogin = async () => {
     try {
       await login(email, password);
-      router.replace('/(tabs)'); // Using the correct route format
+      router.replace("/tabs"); // Using the correct route format
     } catch (error) {
       // Error is handled in the store
     }
   };
-  
+
   const handleRegister = () => {
-    router.push('/auth/register');
+    router.push("/auth/register");
   };
-  
+
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
-        options={{ 
-          title: 'Login',
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <Stack.Screen
+        options={{
+          title: "Login",
           headerShown: false,
-        }} 
+        }}
       />
-      
+
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingView}
       >
         <ScrollView
@@ -51,16 +61,16 @@ export default function LoginScreen() {
             </View>
             <Text style={styles.appName}>DrivingLessons</Text>
           </View>
-          
+
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue</Text>
-          
+
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
-          
+
           <View style={styles.inputContainer}>
             <Mail size={20} color={colors.textSecondary} />
             <TextInput
@@ -72,7 +82,7 @@ export default function LoginScreen() {
               keyboardType="email-address"
             />
           </View>
-          
+
           <View style={styles.inputContainer}>
             <Lock size={20} color={colors.textSecondary} />
             <TextInput
@@ -86,18 +96,16 @@ export default function LoginScreen() {
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeIcon}
             >
-              {showPassword ? (
-                <EyeOff size={20} color={colors.textSecondary} />
-              ) : (
-                <Eye size={20} color={colors.textSecondary} />
-              )}
+              {showPassword
+                ? <EyeOff size={20} color={colors.textSecondary} />
+                : <Eye size={20} color={colors.textSecondary} />}
             </TouchableOpacity>
           </View>
-          
+
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
-          
+
           <Button
             title="Login"
             variant="primary"
@@ -106,9 +114,9 @@ export default function LoginScreen() {
             onPress={handleLogin}
             style={styles.loginButton}
           />
-          
+
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
+            <Text style={styles.registerText}>Don't have an account?</Text>
             <TouchableOpacity onPress={handleRegister}>
               <Text style={styles.registerLink}>Register</Text>
             </TouchableOpacity>
@@ -130,10 +138,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 40,
   },
   logo: {
@@ -141,23 +149,23 @@ const styles = StyleSheet.create({
     height: 80,
     backgroundColor: colors.secondary,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
   logoText: {
     color: colors.white,
     fontSize: 36,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   appName: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colors.text,
     marginBottom: 8,
   },
@@ -167,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   errorContainer: {
-    backgroundColor: colors.error + '20',
+    backgroundColor: colors.error + "20",
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
@@ -177,8 +185,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.border,
@@ -197,20 +205,20 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   forgotPassword: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginBottom: 24,
   },
   forgotPasswordText: {
     color: colors.primary,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   loginButton: {
     marginBottom: 24,
   },
   registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   registerText: {
     color: colors.textSecondary,
@@ -219,6 +227,7 @@ const styles = StyleSheet.create({
   registerLink: {
     color: colors.primary,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
+

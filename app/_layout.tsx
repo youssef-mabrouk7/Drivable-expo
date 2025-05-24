@@ -61,7 +61,7 @@ function RootLayoutNav() {
         router.replace("/tabs");
       } else if (isAuth && inAuthGroup) {
         // Redirect to the home page if authenticated and on an auth page
-        router.replace("/tabs");
+        router.replace("/auth/login");
       }
     };
 
