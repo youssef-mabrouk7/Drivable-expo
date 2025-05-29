@@ -12,17 +12,13 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import {
   Calendar,
-  ChevronLeft,
   Clock,
   FileText,
-  Mail,
   MapPin,
-  MessageCircle,
-  Phone,
-  Star,
-  X,
   Car,
+  Star,
   BookOpen,
+  Users,
 } from "lucide-react-native";
 import { useLessonStore } from "@/store/LessonStore";
 import { Button } from "@/components/Button";
@@ -35,8 +31,7 @@ export default function LessonDetailScreen() {
   const params = useLocalSearchParams();
   const id = params.id as string;
 
-  const { upcomingLessons, pastLessons, cancelLesson, isLoading } =
-    useLessonStore();
+  const { upcomingLessons, pastLessons, isLoading } = useLessonStore();
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [instructor, setInstructor] = useState<Instructor | null>(null);
@@ -68,36 +63,6 @@ export default function LessonDetailScreen() {
       }
     }
   }, [id, upcomingLessons, pastLessons]);
-
-  const handleCancelLesson = () => {
-    if (!lesson) return;
-
-    if (Platform.OS === "web") {
-      if (confirm("Are you sure you want to cancel this lesson?")) {
-        cancelLesson(lesson.id);
-        router.replace("/tabs/schedule");
-      }
-    } else {
-      Alert.alert(
-        "Cancel Lesson",
-        "Are you sure you want to cancel this lesson? This action cannot be undone.",
-        [
-          {
-            text: "No",
-            style: "cancel",
-          },
-          {
-            text: "Yes, Cancel",
-            onPress: async () => {
-              await cancelLesson(lesson.id);
-              router.replace("/tabs/schedule");
-            },
-            style: "destructive",
-          },
-        ],
-      );
-    }
-  };
 
   const handleBookLesson = () => {
     if (!lesson) return;
@@ -136,9 +101,6 @@ export default function LessonDetailScreen() {
     hour12: true,
   });
 
-  const isPastLesson = lesson.status === "completed" ||
-    lesson.status === "cancelled";
-
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen
@@ -158,21 +120,6 @@ export default function LessonDetailScreen() {
             <View style={styles.titleContainer}>
               <Car size={24} color={colors.primary} />
               <Text style={styles.title}>{lesson.topic}</Text>
-            </View>
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(lesson.status) + "20" },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.statusText,
-                  { color: getStatusColor(lesson.status) },
-                ]}
-              >
-                {lesson.status.charAt(0).toUpperCase() + lesson.status.slice(1)}
-              </Text>
             </View>
           </View>
 
@@ -245,60 +192,31 @@ export default function LessonDetailScreen() {
 
             <Text style={styles.bio}>{instructor.bio}</Text>
 
-            <View style={styles.contactContainer}>
-              <Button
-                title="Call"
-                variant="outline"
-                icon={<Phone size={16} color={colors.primary} />}
-                style={styles.contactButton}
-              />
-
-              <Button
-                title="Email"
-                variant="outline"
-                icon={<Mail size={16} color={colors.primary} />}
-                style={styles.contactButton}
-              />
-
-              <Button
-                title="Message"
-                variant="outline"
-                icon={<MessageCircle size={16} color={colors.primary} />}
-                style={styles.contactButton}
-              />
+            <View style={styles.specialtiesContainer}>
+              <Text style={styles.specialtiesTitle}>Specialties:</Text>
+              <View style={styles.specialtiesList}>
+                {instructor.specialties.map((specialty, index) => (
+                  <View key={index} style={styles.specialtyBadge}>
+                    <Text style={styles.specialtyText}>{specialty}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
         )}
 
-        {!isPastLesson && (
-          <Button
-            title="Book This Lesson"
-            variant="primary"
-            icon={<BookOpen size={20} color={colors.white} />}
-            onPress={handleBookLesson}
-            loading={isLoading}
-            style={styles.bookButton}
-          />
-        )}
+        <Button
+          title="Book This Lesson"
+          variant="primary"
+          icon={<BookOpen size={20} color={colors.white} />}
+          onPress={handleBookLesson}
+          loading={isLoading}
+          style={styles.bookButton}
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const getStatusColor = (status: Lesson["status"]) => {
-  switch (status) {
-    case "confirmed":
-      return colors.primary;
-    case "pending":
-      return colors.secondary;
-    case "completed":
-      return colors.success;
-    case "cancelled":
-      return colors.error;
-    default:
-      return colors.textSecondary;
-  }
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -359,15 +277,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.text,
     marginLeft: 8,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "500",
   },
   infoRow: {
     flexDirection: "row",
@@ -454,13 +363,30 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 16,
   },
-  contactContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  specialtiesContainer: {
+    marginTop: 8,
   },
-  contactButton: {
-    flex: 1,
-    marginHorizontal: 4,
+  specialtiesTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 8,
+  },
+  specialtiesList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  specialtyBadge: {
+    backgroundColor: colors.primary + "20",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  specialtyText: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: "500",
   },
   bookButton: {
     marginTop: 8,
