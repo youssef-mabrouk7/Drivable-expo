@@ -47,7 +47,7 @@ export default function HomeScreen() {
           <View>
             <Text style={styles.greeting}>Welcome back,</Text>
             <Text style={styles.name}>
-              {user?.name?.split(" ")[0] || "Driver"}
+              {user?.firstName?.split(" ")[0] || "Driver"}
             </Text>
           </View>
           <View style={styles.logoContainer}>

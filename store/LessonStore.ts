@@ -37,11 +37,10 @@ export const useLessonStore = create<LessonState>()(
           // const upcomingLessons = await lessonsAPI.getUpcomingLessons();
           // const pastLessons = await lessonsAPI.getPastLessons();
 
-          const data = await lessonsAPI.getUpcomingLessons();
+          const data = await lessonsAPI.getLessons();
 
           set({
             upcomingLessons: data,
-            pastLessons: data,
             isLoading: false,
           });
         } catch (error) {

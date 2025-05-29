@@ -36,12 +36,7 @@ export default function BookingScreen() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<BookingFormData>({
-    date: new Date(),
-    time: timeSlots[0],
-    duration: 60,
-    topic: lessonTopics[0],
-    notes: "",
-  });
+);
 
   const handleDateChange = (date: Date) => {
     setBookingData((prev) => ({ ...prev, date }));
@@ -224,7 +219,7 @@ export default function BookingScreen() {
               <InstructorCard
                 key={instructor.id}
                 instructor={instructor}
-                selected={bookingData.instructorId === instructor.id}
+                selected={bookingData. === instructor.id}
                 onSelect={handleInstructorSelect}
               />
             ))}
@@ -271,11 +266,11 @@ export default function BookingScreen() {
               <MapPin size={20} color={colors.primary} />
               <View style={styles.centerInfo}>
                 <Text style={styles.centerName}>
-                  {drivingCenters.find((c) => c.id === bookingData.centerId)
+                  {drivingCenters.find((c) => c.id === bookingData.)
                     ?.name}
                 </Text>
                 <Text style={styles.centerAddress}>
-                  {drivingCenters.find((c) => c.id === bookingData.centerId)
+                  {drivingCenters.find((c) => c.id === bookingData.)
                     ?.address}
                 </Text>
               </View>
@@ -309,7 +304,7 @@ export default function BookingScreen() {
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Instructor:</Text>
                 <Text style={styles.summaryValue}>
-                  {instructors.find((i) => i.id === bookingData.instructorId)
+                  {instructors.find((i) => i.id === bookingData.)
                     ?.name || "Any available"}
                 </Text>
               </View>

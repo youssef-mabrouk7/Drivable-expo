@@ -75,39 +75,28 @@ export const authAPI = {
 
 // Lessons API
 export const lessonsAPI = {
-  getUpcomingLessons: async () => {
-    return apiRequest("/registrations");
+  getLessons: async () => {
+    return apiRequest("/sessions");
   },
 
-  getPastLessons: async () => {
-    return apiRequest("/lessons/past");
-  },
 
   getLessonById: async (id: string) => {
-    return apiRequest(`/lessons/${id}`);
+    return apiRequest(`/sessions/${id}`);
   },
 
-  bookLesson: async (bookingData: BookingFormData) => {
-    return apiRequest("/lessons", {
+  bookLesson: async (id: string, bookingData: BookingFormData) => {
+    return apiRequest(`/sessions/${id}/register`, {
       method: "POST",
       body: JSON.stringify(bookingData),
     });
   },
 
   cancelLesson: async (id: string) => {
-    return apiRequest(`/lessons/${id}/cancel`, {
-      method: "POST",
+    return apiRequest(`/registrations/${id}`, {
+      method: "DELETE",
     });
   },
-
-  completeLesson: async (id: string, rating?: number, feedback?: string) => {
-    return apiRequest(`/lessons/${id}/complete`, {
-      method: "POST",
-      body: JSON.stringify({ rating, feedback }),
-    });
-  },
-};
-
+}
 // Instructors API
 export const instructorsAPI = {
   getAllInstructors: async () => {
@@ -137,16 +126,10 @@ export const centersAPI = {
 // User Profile API
 export const profileAPI = {
   updateProfile: async (userData: Partial<User>) => {
-    return apiRequest("/profile", {
-      method: "PUT",
-      body: JSON.stringify(userData),
+    return apiRequest("/testing/me", {
+      method: "GET",
+      
     });
   },
 
-  updatePreferences: async (preferences: User["preferences"]) => {
-    return apiRequest("/profile/preferences", {
-      method: "PUT",
-      body: JSON.stringify(preferences),
-    });
-  },
 };
