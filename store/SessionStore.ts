@@ -8,6 +8,21 @@ interface SessionState {
   fetchSessions: () => Promise<void>;
 }
 
+// Sample data from the backend
+const mockSessions: Session[] = [
+  {
+    id: 9007199254740991,
+    scenario: {
+      scenarioID: 1073741824,
+      name: "Highway Driving",
+      environmentType: "Urban",
+      difficulty: "EASY"
+    },
+    date: "2025-05-29T17:54:19.701Z",
+    location: "Main Training Center"
+  }
+];
+
 export const useSessionStore = create<SessionState>((set) => ({
   sessions: [],
   isLoading: false,
@@ -16,10 +31,14 @@ export const useSessionStore = create<SessionState>((set) => ({
   fetchSessions: async () => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('YOUR_API_ENDPOINT/sessions');
-      const data = await response.json();
-      set({ sessions: data, isLoading: false });
+      // Simulating API call with mock data
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      set({ sessions: mockSessions, isLoading: false });
+      
+      // TODO: Replace with actual API call when ready
+      // const response = await fetch('YOUR_API_ENDPOINT/sessions');
+      // const data = await response.json();
+      // set({ sessions: data, isLoading: false });
     } catch (error) {
       console.error("Error fetching sessions:", error);
       set({
