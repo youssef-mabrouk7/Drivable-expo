@@ -99,3 +99,23 @@ export type PaginatedResponse<T> = {
     total: number;
   };
 };
+
+export interface Scenario {
+  scenarioID: number;
+  name: string;
+  environmentType: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+}
+
+export interface Session {
+  id: number;
+  scenario: Scenario;
+  date: string;
+  location: string;
+}
+
+export interface SessionState {
+  sessions: Session[];
+  isLoading: boolean;
+  error: string | null;
+}
