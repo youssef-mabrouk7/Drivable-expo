@@ -1,6 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { Navigator, Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import { ErrorBoundary } from "./error-boundary";
@@ -12,7 +12,7 @@ export const unstable_settings = {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 import * as SplashScreen from "expo-splash-screen";
-import { NavigationContainer } from "@react-navigation/native";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -53,19 +53,18 @@ function RootLayoutNav() {
     // Check if the user is authenticated
     const checkAuth = async () => {
       const isAuth = await checkAuthStatus();
-
       const inAuthGroup = segments[0] === "auth";
 
       if (!isAuth && !inAuthGroup) {
         // Redirect to the login page if not authenticated
-        router.replace("/tabs");
+        router.replace("/auth/login");
       } else if (isAuth && inAuthGroup) {
         // Redirect to the home page if authenticated and on an auth page
-        router.replace("/auth/login");
+        router.replace("/tabs");
       }
     };
 
-    // checkAuth();
+    checkAuth();
   }, [isAuthenticated, segments]);
 
   return (
@@ -85,3 +84,4 @@ function RootLayoutNav() {
     </Stack>
   );
 }
+
