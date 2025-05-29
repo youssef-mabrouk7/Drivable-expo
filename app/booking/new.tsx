@@ -35,8 +35,7 @@ export default function BookingScreen() {
   const { bookLesson, isLoading } = useLessonStore();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [bookingData, setBookingData] = useState<BookingFormData>({
-);
+  const [bookingData, setBookingData] = useState<BookingFormData>({});
 
   const handleDateChange = (date: Date) => {
     setBookingData((prev) => ({ ...prev, date }));
@@ -214,15 +213,6 @@ export default function BookingScreen() {
               Choose an instructor for your lesson. All our instructors are
               certified and experienced.
             </Text>
-
-            {instructors.map((instructor) => (
-              <InstructorCard
-                key={instructor.id}
-                instructor={instructor}
-                selected={bookingData. === instructor.id}
-                onSelect={handleInstructorSelect}
-              />
-            ))}
           </>
         );
 
@@ -266,12 +256,8 @@ export default function BookingScreen() {
               <MapPin size={20} color={colors.primary} />
               <View style={styles.centerInfo}>
                 <Text style={styles.centerName}>
-                  {drivingCenters.find((c) => c.id === bookingData.)
-                    ?.name}
                 </Text>
                 <Text style={styles.centerAddress}>
-                  {drivingCenters.find((c) => c.id === bookingData.)
-                    ?.address}
                 </Text>
               </View>
             </View>
@@ -304,8 +290,6 @@ export default function BookingScreen() {
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Instructor:</Text>
                 <Text style={styles.summaryValue}>
-                  {instructors.find((i) => i.id === bookingData.)
-                    ?.name || "Any available"}
                 </Text>
               </View>
 
@@ -581,4 +565,3 @@ const styles = StyleSheet.create({
     }),
   },
 });
-
