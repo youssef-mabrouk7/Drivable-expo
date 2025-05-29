@@ -21,6 +21,8 @@ import {
   Phone,
   Star,
   X,
+  Car,
+  BookOpen,
 } from "lucide-react-native";
 import { useLessonStore } from "@/store/LessonStore";
 import { Button } from "@/components/Button";
@@ -97,6 +99,19 @@ export default function LessonDetailScreen() {
     }
   };
 
+  const handleBookLesson = () => {
+    if (!lesson) return;
+    router.push({
+      pathname: "/booking/new",
+      params: {
+        lessonId: lesson.id,
+        topic: lesson.topic,
+        duration: lesson.duration.toString(),
+        price: lesson.price.toString(),
+      },
+    });
+  };
+
   if (!lesson) {
     return (
       <SafeAreaView style={styles.container}>
@@ -140,7 +155,10 @@ export default function LessonDetailScreen() {
       >
         <View style={styles.card}>
           <View style={styles.header}>
-            <Text style={styles.title}>{lesson.topic}</Text>
+            <View style={styles.titleContainer}>
+              <Car size={24} color={colors.primary} />
+              <Text style={styles.title}>{lesson.topic}</Text>
+            </View>
             <View
               style={[
                 styles.statusBadge,
@@ -254,13 +272,12 @@ export default function LessonDetailScreen() {
 
         {!isPastLesson && (
           <Button
-            title="Cancel Lesson"
-            variant="outline"
-            icon={<X size={20} color={colors.error} />}
-            onPress={handleCancelLesson}
+            title="Book This Lesson"
+            variant="primary"
+            icon={<BookOpen size={20} color={colors.white} />}
+            onPress={handleBookLesson}
             loading={isLoading}
-            style={styles.cancelButton}
-            textStyle={{ color: colors.error }}
+            style={styles.bookButton}
           />
         )}
       </ScrollView>
@@ -332,10 +349,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
   title: {
     fontSize: 20,
     fontWeight: "600",
     color: colors.text,
+    marginLeft: 8,
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -439,9 +462,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 4,
   },
-  cancelButton: {
+  bookButton: {
     marginTop: 8,
-    borderColor: colors.error,
   },
 });
 
