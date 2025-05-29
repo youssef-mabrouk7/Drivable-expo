@@ -30,8 +30,8 @@ import { DrivingCenter, Instructor, Lesson } from "@/types";
 
 export default function LessonDetailScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<"D:/driveable2/app/lesson/[id]">();
-  const { id } = params; // Now TypeScript knows that 'id' exists
+  const params = useLocalSearchParams();
+  const id = params.id as string;
 
   const { upcomingLessons, pastLessons, cancelLesson, isLoading } =
     useLessonStore();
@@ -49,17 +49,21 @@ export default function LessonDetailScreen() {
     if (foundLesson) {
       setLesson(foundLesson);
 
-      // Find the instructor
-      const foundInstructor = instructors.find(
-        (instructor) => instructor.id === foundLesson.instructorId,
-      );
-      setInstructor(foundInstructor || null);
+      // Find the instructor if instructorId exists
+      if (foundLesson.instructorId) {
+        const foundInstructor = instructors.find(
+          (instructor) => instructor.id === foundLesson.instructorId,
+        );
+        setInstructor(foundInstructor || null);
+      }
 
-      // Find the center
-      const foundCenter = drivingCenters.find(
-        (center) => center.id === foundLesson.centerId,
-      );
-      setCenter(foundCenter || null);
+      // Find the center if centerId exists
+      if (foundLesson.centerId) {
+        const foundCenter = drivingCenters.find(
+          (center) => center.id === foundLesson.centerId,
+        );
+        setCenter(foundCenter || null);
+      }
     }
   }, [id, upcomingLessons, pastLessons]);
 
@@ -69,7 +73,7 @@ export default function LessonDetailScreen() {
     if (Platform.OS === "web") {
       if (confirm("Are you sure you want to cancel this lesson?")) {
         cancelLesson(lesson.id);
-        router.replace("/schedule");
+        router.replace("/tabs/schedule");
       }
     } else {
       Alert.alert(
@@ -84,7 +88,7 @@ export default function LessonDetailScreen() {
             text: "Yes, Cancel",
             onPress: async () => {
               await cancelLesson(lesson.id);
-              router.replace("/schedule");
+              router.replace("/tabs/schedule");
             },
             style: "destructive",
           },

@@ -2,6 +2,8 @@
 
 export type Lesson = {
   id: string;
+  instructorId?: string;
+  centerId?: string;
   date: Date;
   duration: number; // in minutes
   status: "confirmed" | "pending" | "completed" | "cancelled";
