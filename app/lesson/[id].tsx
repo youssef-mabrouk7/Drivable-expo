@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -14,11 +15,12 @@ import {
   MapPin,
   Car,
   BookOpen,
+  User,
 } from "lucide-react-native";
 import { useLessonStore } from "@/store/LessonStore";
 import { Button } from "@/components/Button";
 import { colors } from "@/constants/colors";
-import { Lesson } from "@/types";
+import { Lesson, Instructor } from "@/types";
 
 export default function LessonDetailScreen() {
   const router = useRouter();
@@ -26,8 +28,10 @@ export default function LessonDetailScreen() {
   const id = params.id as string;
 
   const { upcomingLessons, pastLessons, isLoading } = useLessonStore();
-
   const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [isLoadingInstructors, setIsLoadingInstructors] = useState(false);
 
   useEffect(() => {
     // Find the lesson in either upcoming or past lessons
@@ -40,17 +44,50 @@ export default function LessonDetailScreen() {
     }
   }, [id, upcomingLessons, pastLessons]);
 
-  const handleBookLesson = () => {
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      setIsLoadingInstructors(true);
+      try {
+        const response = await fetch('YOUR_BACKEND_API_URL/instructors');
+        const data = await response.json();
+        setInstructors(data);
+      } catch (error) {
+        console.error("Error fetching instructors:", error);
+      } finally {
+        setIsLoadingInstructors(false);
+      }
+    };
+
+    fetchInstructors();
+  }, []);
+
+  const handleBookLesson = async () => {
     if (!lesson) return;
-    router.push({
-      pathname: "/booking/new",
-      params: {
-        lessonId: lesson.id.toString(),
-        scenarioId: lesson.scenario.scenarioID.toString(),
-        scenarioName: lesson.scenario.name,
-        difficulty: lesson.scenario.difficulty,
-      },
-    });
+
+    try {
+      const response = await fetch('YOUR_BACKEND_API_URL/book-lesson', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lessonId: lesson.id,
+          date: lesson.date,
+          location: lesson.location,
+          scenarioId: lesson.scenario.scenarioID,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to book lesson');
+      }
+
+      // Navigate to the sessions tab
+      router.replace("/(tabs)/sessions" as any);
+    } catch (error) {
+      console.error("Error booking lesson:", error);
+      // You might want to show an error message to the user here
+    }
   };
 
   if (!lesson) {
