@@ -71,13 +71,8 @@ function RootLayoutNav() {
     <Stack>
       <Stack.Screen
         name="tabs"
-        options={{ headerShown: true, title: "home" }}
+        options={{ headerShown: true, title: "Home" }}
       />
-      <Stack.Screen
-        name="booking/confirmation"
-        options={{ headerShown: true }}
-      />
-      <Stack.Screen name="booking/new" options={{ headerShown: true }} />
       <Stack.Screen name="lesson/[id]" options={{ headerShown: true }} />
       <Stack.Screen name="auth/login" options={{ headerShown: false }} />
       <Stack.Screen name="auth/index" options={{ headerShown: false }} />
