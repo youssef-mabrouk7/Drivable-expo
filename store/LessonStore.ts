@@ -1,9 +1,8 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BookingFormData, Lesson } from "@/types";
+import { BookingFormData, Lesson, Scenario } from "@/types";
 import { lessonsAPI } from "@/services/api";
-import axios from "axios";
 
 interface LessonState {
   upcomingLessons: Lesson[];
@@ -14,12 +13,7 @@ interface LessonState {
   // Actions
   fetchLessons: () => Promise<void>;
   bookLesson: (bookingData: BookingFormData) => Promise<void>;
-  cancelLesson: (lessonId: string) => Promise<void>;
-  completeLesson: (
-    lessonId: string,
-    rating?: number,
-    feedback?: string,
-  ) => Promise<void>;
+  cancelLesson: (lessonId: number) => Promise<void>;
 }
 
 export const useLessonStore = create<LessonState>()(
@@ -33,12 +27,7 @@ export const useLessonStore = create<LessonState>()(
       fetchLessons: async () => {
         set({ isLoading: true, error: null });
         try {
-          // In a real app with backend integration:
-          // const upcomingLessons = await lessonsAPI.getUpcomingLessons();
-          // const pastLessons = await lessonsAPI.getPastLessons();
-
           const data = await lessonsAPI.getLessons();
-
           set({
             upcomingLessons: data,
             isLoading: false,
@@ -57,20 +46,18 @@ export const useLessonStore = create<LessonState>()(
       bookLesson: async (bookingData: BookingFormData) => {
         set({ isLoading: true, error: null });
         try {
-          // In a real app with backend integration:
-          // const newLesson = await lessonsAPI.bookLesson(bookingData);
-
           // For now, simulate API call
           const newLesson: Lesson = {
-            id: Date.now().toString(),
+            id: Date.now(),
+            scenario: {
+              scenarioID: Math.floor(Math.random() * 1000000),
+              name: bookingData.topic,
+              environmentType: "Urban", // Default value
+              difficulty: "EASY", // Default value
+            },
             date: new Date(
               `${bookingData.date.toDateString()} ${bookingData.time}`,
-            ),
-            duration: bookingData.duration,
-            status: "pending",
-            topic: bookingData.topic,
-            notes: bookingData.notes,
-            price: bookingData.duration === 60 ? 45 : 65, // Simple price calculation
+            ).toISOString(),
             location: bookingData.location,
           };
 
@@ -92,12 +79,9 @@ export const useLessonStore = create<LessonState>()(
         }
       },
 
-      cancelLesson: async (lessonId: string) => {
+      cancelLesson: async (lessonId: number) => {
         set({ isLoading: true, error: null });
         try {
-          // In a real app with backend integration:
-          // await lessonsAPI.cancelLesson(lessonId);
-
           // Simulate network delay
           await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -113,49 +97,6 @@ export const useLessonStore = create<LessonState>()(
             error: error instanceof Error
               ? error.message
               : "Failed to cancel lesson",
-            isLoading: false,
-          });
-        }
-      },
-
-      completeLesson: async (
-        lessonId: string,
-        rating?: number,
-        feedback?: string,
-      ) => {
-        set({ isLoading: true, error: null });
-        try {
-          // In a real app with backend integration:
-          // await lessonsAPI.completeLesson(lessonId, rating, feedback);
-
-          // Simulate network delay
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          set((state) => {
-            const lesson = state.upcomingLessons.find((l) => l.id === lessonId);
-            if (!lesson) return state;
-
-            const completedLesson: Lesson = {
-              ...lesson,
-              status: "completed",
-              rating,
-              feedback,
-            };
-
-            return {
-              upcomingLessons: state.upcomingLessons.filter((l) =>
-                l.id !== lessonId
-              ),
-              pastLessons: [completedLesson, ...state.pastLessons],
-              isLoading: false,
-            };
-          });
-        } catch (error) {
-          console.error("Error completing lesson:", error);
-          set({
-            error: error instanceof Error
-              ? error.message
-              : "Failed to complete lesson",
             isLoading: false,
           });
         }

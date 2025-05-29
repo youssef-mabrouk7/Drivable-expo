@@ -1,19 +1,18 @@
 // Type definitions for the app
 
-export type Lesson = {
-  id: string;
-  instructorId?: string;
-  centerId?: string;
-  date: Date;
-  duration: number; // in minutes
-  status: "confirmed" | "pending" | "completed" | "cancelled";
-  topic: string;
-  notes?: string;
-  price: number;
-  rating?: number;
-  feedback?: string;
+export interface Scenario {
+  scenarioID: number;
+  name: string;
+  environmentType: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+}
+
+export interface Lesson {
+  id: number;
+  scenario: Scenario;
+  date: string;
   location: string;
-};
+}
 
 export type Instructor = {
   id: string;
@@ -101,13 +100,6 @@ export type PaginatedResponse<T> = {
     total: number;
   };
 };
-
-export interface Scenario {
-  scenarioID: number;
-  name: string;
-  environmentType: string;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
-}
 
 export interface Session {
   id: number;

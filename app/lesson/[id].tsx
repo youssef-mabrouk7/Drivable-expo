@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -9,22 +8,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Image } from "expo-image";
 import {
   Calendar,
   Clock,
-  FileText,
   MapPin,
   Car,
-  Star,
   BookOpen,
-  Users,
 } from "lucide-react-native";
 import { useLessonStore } from "@/store/LessonStore";
 import { Button } from "@/components/Button";
 import { colors } from "@/constants/colors";
-import { drivingCenters, instructors } from "@/constants/mockData";
-import { DrivingCenter, Instructor, Lesson } from "@/types";
+import { Lesson } from "@/types";
 
 export default function LessonDetailScreen() {
   const router = useRouter();
@@ -34,33 +28,15 @@ export default function LessonDetailScreen() {
   const { upcomingLessons, pastLessons, isLoading } = useLessonStore();
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [instructor, setInstructor] = useState<Instructor | null>(null);
-  const [center, setCenter] = useState<DrivingCenter | null>(null);
 
   useEffect(() => {
     // Find the lesson in either upcoming or past lessons
     const foundLesson = [...upcomingLessons, ...pastLessons].find(
-      (lesson) => lesson.id === id,
+      (lesson) => lesson.id.toString() === id,
     );
 
     if (foundLesson) {
       setLesson(foundLesson);
-
-      // Find the instructor if instructorId exists
-      if (foundLesson.instructorId) {
-        const foundInstructor = instructors.find(
-          (instructor) => instructor.id === foundLesson.instructorId,
-        );
-        setInstructor(foundInstructor || null);
-      }
-
-      // Find the center if centerId exists
-      if (foundLesson.centerId) {
-        const foundCenter = drivingCenters.find(
-          (center) => center.id === foundLesson.centerId,
-        );
-        setCenter(foundCenter || null);
-      }
     }
   }, [id, upcomingLessons, pastLessons]);
 
@@ -69,10 +45,10 @@ export default function LessonDetailScreen() {
     router.push({
       pathname: "/booking/new",
       params: {
-        lessonId: lesson.id,
-        topic: lesson.topic,
-        duration: lesson.duration.toString(),
-        price: lesson.price.toString(),
+        lessonId: lesson.id.toString(),
+        scenarioId: lesson.scenario.scenarioID.toString(),
+        scenarioName: lesson.scenario.name,
+        difficulty: lesson.scenario.difficulty,
       },
     });
   };
@@ -101,6 +77,19 @@ export default function LessonDetailScreen() {
     hour12: true,
   });
 
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'EASY':
+        return colors.success;
+      case 'MEDIUM':
+        return colors.secondary;
+      case 'HARD':
+        return colors.error;
+      default:
+        return colors.primary;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen
@@ -119,7 +108,12 @@ export default function LessonDetailScreen() {
           <View style={styles.header}>
             <View style={styles.titleContainer}>
               <Car size={24} color={colors.primary} />
-              <Text style={styles.title}>{lesson.topic}</Text>
+              <Text style={styles.title}>{lesson.scenario.name}</Text>
+            </View>
+            <View style={[styles.difficultyBadge, { backgroundColor: getDifficultyColor(lesson.scenario.difficulty) + "20" }]}>
+              <Text style={[styles.difficultyText, { color: getDifficultyColor(lesson.scenario.difficulty) }]}>
+                {lesson.scenario.difficulty}
+              </Text>
             </View>
           </View>
 
@@ -130,80 +124,21 @@ export default function LessonDetailScreen() {
 
           <View style={styles.infoRow}>
             <Clock size={20} color={colors.primary} />
-            <Text style={styles.infoText}>
-              {formattedTime} • {lesson.duration} minutes
-            </Text>
+            <Text style={styles.infoText}>{formattedTime}</Text>
           </View>
 
-          {center && (
-            <View style={styles.infoRow}>
-              <MapPin size={20} color={colors.primary} />
-              <View>
-                <Text style={styles.infoText}>{center.name}</Text>
-                <Text style={styles.subInfoText}>{center.address}</Text>
-              </View>
-            </View>
-          )}
+          <View style={styles.infoRow}>
+            <MapPin size={20} color={colors.primary} />
+            <Text style={styles.infoText}>{lesson.location}</Text>
+          </View>
 
-          {lesson.notes && (
-            <View style={styles.infoRow}>
-              <FileText size={20} color={colors.primary} />
-              <Text style={styles.infoText}>{lesson.notes}</Text>
+          <View style={styles.environmentContainer}>
+            <Text style={styles.environmentLabel}>Environment Type:</Text>
+            <View style={styles.environmentBadge}>
+              <Text style={styles.environmentText}>{lesson.scenario.environmentType}</Text>
             </View>
-          )}
-
-          <View style={styles.priceContainer}>
-            <Text style={styles.priceLabel}>Price</Text>
-            <Text style={styles.priceValue}>${lesson.price}</Text>
           </View>
         </View>
-
-        {instructor && (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Instructor</Text>
-
-            <View style={styles.instructorContainer}>
-              <Image
-                source={{ uri: instructor.avatar }}
-                style={styles.instructorImage}
-                contentFit="cover"
-              />
-
-              <View style={styles.instructorInfo}>
-                <Text style={styles.instructorName}>{instructor.name}</Text>
-
-                <View style={styles.ratingContainer}>
-                  <Star
-                    size={16}
-                    color={colors.secondary}
-                    fill={colors.secondary}
-                  />
-                  <Text style={styles.rating}>{instructor.rating}</Text>
-                  <Text style={styles.reviews}>
-                    ({instructor.reviews} reviews)
-                  </Text>
-                </View>
-
-                <Text style={styles.experience}>
-                  {instructor.experience} experience
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.bio}>{instructor.bio}</Text>
-
-            <View style={styles.specialtiesContainer}>
-              <Text style={styles.specialtiesTitle}>Specialties:</Text>
-              <View style={styles.specialtiesList}>
-                {instructor.specialties.map((specialty, index) => (
-                  <View key={index} style={styles.specialtyBadge}>
-                    <Text style={styles.specialtyText}>{specialty}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </View>
-        )}
 
         <Button
           title="Book This Lesson"
@@ -278,6 +213,15 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginLeft: 8,
   },
+  difficultyBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  difficultyText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
   infoRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -289,102 +233,26 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
-  subInfoText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginLeft: 12,
-  },
-  priceContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  environmentContainer: {
     marginTop: 8,
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  priceLabel: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  priceValue: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 16,
-  },
-  instructorContainer: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  instructorImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-  },
-  instructorInfo: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  instructorName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 4,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  rating: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colors.text,
-    marginLeft: 4,
-  },
-  reviews: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 4,
-  },
-  experience: {
+  environmentLabel: {
     fontSize: 14,
     color: colors.textSecondary,
-  },
-  bio: {
-    fontSize: 14,
-    color: colors.text,
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  specialtiesContainer: {
-    marginTop: 8,
-  },
-  specialtiesTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.text,
     marginBottom: 8,
   },
-  specialtiesList: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  specialtyBadge: {
+  environmentBadge: {
     backgroundColor: colors.primary + "20",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    alignSelf: "flex-start",
   },
-  specialtyText: {
-    fontSize: 12,
+  environmentText: {
+    fontSize: 14,
     color: colors.primary,
     fontWeight: "500",
   },
