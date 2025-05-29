@@ -1,14 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  BookingFormData,
-  DrivingCenter,
-  Instructor,
-  Lesson,
-  User,
-} from "@/types";
+import { DrivingCenter, Instructor, Lesson, User } from "@/types";
 
 // Base API URL - would be replaced with actual backend URL
-const API_URL = "http://192.168.1.101:8080/api/v1";
+const API_URL = "http://192.168.1.48:8080/api/v1";
 
 // Helper to get auth token
 const getToken = async () => {
@@ -69,7 +63,7 @@ export const authAPI = {
   },
 
   getCurrentUser: async () => {
-    return apiRequest("/auth/me");
+    return apiRequest("/testing/me");
   },
 };
 
@@ -79,15 +73,14 @@ export const lessonsAPI = {
     return apiRequest("/sessions");
   },
 
-
   getLessonById: async (id: string) => {
     return apiRequest(`/sessions/${id}`);
   },
 
-  bookLesson: async (id: string, bookingData: BookingFormData) => {
-    return apiRequest(`/sessions/${id}/register`, {
+  bookLesson: async (id: string) => {
+    const idNumber = parseInt(id);
+    return apiRequest(`/sessions/${idNumber}/register`, {
       method: "POST",
-      body: JSON.stringify(bookingData),
     });
   },
 
@@ -96,7 +89,7 @@ export const lessonsAPI = {
       method: "DELETE",
     });
   },
-}
+};
 // Instructors API
 export const instructorsAPI = {
   getAllInstructors: async () => {
@@ -128,8 +121,6 @@ export const profileAPI = {
   updateProfile: async (userData: Partial<User>) => {
     return apiRequest("/testing/me", {
       method: "GET",
-      
     });
   },
-
 };

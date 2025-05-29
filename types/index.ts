@@ -4,7 +4,7 @@ export interface Scenario {
   scenarioID: number;
   name: string;
   environmentType: string;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  difficulty: "EASY" | "MEDIUM" | "HARD";
 }
 
 export interface Lesson {
@@ -57,15 +57,6 @@ export type User = {
     preferredTimes?: string[];
   };
   handicapType?: number;
-};
-
-export type BookingFormData = {
-  date: Date;
-  time: string;
-  duration: number;
-  topic: string;
-  notes?: string;
-  location: string;
 };
 
 // API response types

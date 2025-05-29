@@ -4,23 +4,29 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
+  RouteNames,
+  Stack,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import {
+  BookOpen,
   Calendar,
+  Car,
   Clock,
   MapPin,
-  Car,
-  BookOpen,
   User,
 } from "lucide-react-native";
 import { useLessonStore } from "@/store/LessonStore";
 import { Button } from "@/components/Button";
 import { colors } from "@/constants/colors";
-import { Lesson, Instructor } from "@/types";
+import { Instructor, Lesson } from "@/types";
+import { lessonsAPI } from "@/services/api";
 
 export default function LessonDetailScreen() {
   const router = useRouter();
@@ -29,7 +35,9 @@ export default function LessonDetailScreen() {
 
   const { upcomingLessons, pastLessons, isLoading } = useLessonStore();
   const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
+  const [selectedInstructor, setSelectedInstructor] = useState<
+    Instructor | null
+  >(null);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [isLoadingInstructors, setIsLoadingInstructors] = useState(false);
 
@@ -48,7 +56,7 @@ export default function LessonDetailScreen() {
     const fetchInstructors = async () => {
       setIsLoadingInstructors(true);
       try {
-        const response = await fetch('YOUR_BACKEND_API_URL/instructors');
+        const response = await fetch("YOUR_BACKEND_API_URL/instructors");
         const data = await response.json();
         setInstructors(data);
       } catch (error) {
@@ -65,25 +73,13 @@ export default function LessonDetailScreen() {
     if (!lesson) return;
 
     try {
-      const response = await fetch('YOUR_BACKEND_API_URL/book-lesson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          lessonId: lesson.id,
-          date: lesson.date,
-          location: lesson.location,
-          scenarioId: lesson.scenario.scenarioID,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to book lesson');
+      const response = await lessonsAPI.bookLesson(id);
+      if (!response) {
+        throw new Error("Failed to book lesson");
       }
 
       // Navigate to the sessions tab
-      router.replace("/(tabs)/sessions" as any);
+      router.replace("/tabs/index" as RouteNames);
     } catch (error) {
       console.error("Error booking lesson:", error);
       // You might want to show an error message to the user here
@@ -116,11 +112,11 @@ export default function LessonDetailScreen() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'EASY':
+      case "EASY":
         return colors.success;
-      case 'MEDIUM':
+      case "MEDIUM":
         return colors.secondary;
-      case 'HARD':
+      case "HARD":
         return colors.error;
       default:
         return colors.primary;
@@ -147,8 +143,17 @@ export default function LessonDetailScreen() {
               <Car size={24} color={colors.primary} />
               <Text style={styles.title}>{lesson.scenario.name}</Text>
             </View>
-            <View style={[styles.difficultyBadge, { backgroundColor: getDifficultyColor(lesson.scenario.difficulty) + "20" }]}>
-              <Text style={[styles.difficultyText, { color: getDifficultyColor(lesson.scenario.difficulty) }]}>
+            <View
+              style={[styles.difficultyBadge, {
+                backgroundColor:
+                  getDifficultyColor(lesson.scenario.difficulty) + "20",
+              }]}
+            >
+              <Text
+                style={[styles.difficultyText, {
+                  color: getDifficultyColor(lesson.scenario.difficulty),
+                }]}
+              >
                 {lesson.scenario.difficulty}
               </Text>
             </View>
@@ -172,7 +177,9 @@ export default function LessonDetailScreen() {
           <View style={styles.environmentContainer}>
             <Text style={styles.environmentLabel}>Environment Type:</Text>
             <View style={styles.environmentBadge}>
-              <Text style={styles.environmentText}>{lesson.scenario.environmentType}</Text>
+              <Text style={styles.environmentText}>
+                {lesson.scenario.environmentType}
+              </Text>
             </View>
           </View>
         </View>
@@ -297,4 +304,3 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
-

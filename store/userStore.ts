@@ -53,17 +53,19 @@ export const useUserStore = create<UserState>()(
           const response = await authAPI.login(email, password);
           await AsyncStorage.setItem("auth_token", response.token);
 
+          const userData: User = await authAPI.getCurrentUser();
+
           if (response.token) {
             set({
               user: {
                 id: "1",
-                firstName: "James",
-                lastName: "Wilson",
+                firstName: userData.firstName,
+                lastName: userData.lastName,
                 password: "",
                 transmissionType: 0, // 0 for automatic
-                age: "30",
+                age: userData.age,
                 email: email,
-                lessonsCompleted: 5,
+                lessonsCompleted: 0,
                 profileImage:
                   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
               },

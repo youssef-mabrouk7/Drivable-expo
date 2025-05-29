@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BookingFormData, Lesson, Scenario } from "@/types";
+import { Lesson, Scenario } from "@/types";
 import { lessonsAPI } from "@/services/api";
 
 interface LessonState {
@@ -12,7 +12,7 @@ interface LessonState {
 
   // Actions
   fetchLessons: () => Promise<void>;
-  bookLesson: (bookingData: BookingFormData) => Promise<void>;
+  bookLesson: (id: string) => Promise<void>;
   cancelLesson: (lessonId: number) => Promise<void>;
 }
 
@@ -43,26 +43,10 @@ export const useLessonStore = create<LessonState>()(
         }
       },
 
-      bookLesson: async (bookingData: BookingFormData) => {
+      bookLesson: async (id: string) => {
         set({ isLoading: true, error: null });
         try {
-          // For now, simulate API call
-          const newLesson: Lesson = {
-            id: Date.now(),
-            scenario: {
-              scenarioID: Math.floor(Math.random() * 1000000),
-              name: bookingData.topic,
-              environmentType: "Urban", // Default value
-              difficulty: "EASY", // Default value
-            },
-            date: new Date(
-              `${bookingData.date.toDateString()} ${bookingData.time}`,
-            ).toISOString(),
-            location: bookingData.location,
-          };
-
-          // Simulate network delay
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          const newLesson = await lessonsAPI.bookLesson(id);
 
           set((state) => ({
             upcomingLessons: [...state.upcomingLessons, newLesson],

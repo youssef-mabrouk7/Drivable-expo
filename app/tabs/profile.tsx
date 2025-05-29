@@ -1,28 +1,36 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
-import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { 
-  User, 
-  Settings, 
-  CreditCard, 
-  Bell, 
-  HelpCircle, 
+import React from "react";
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Image } from "expo-image";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  HelpCircle,
   LogOut,
-  ChevronRight
-} from 'lucide-react-native';
-import { useUserStore } from '@/store/userStore';
-import { colors } from '@/constants/colors';
+  Settings,
+  User,
+} from "lucide-react-native";
+import { useUserStore } from "@/store/userStore";
+import { colors } from "@/constants/colors";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useUserStore();
-  
+
   const handleLogout = () => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       logout();
-      router.replace('/');
+      router.replace("/");
     } else {
       Alert.alert(
         "Log Out",
@@ -30,67 +38,67 @@ export default function ProfileScreen() {
         [
           {
             text: "Cancel",
-            style: "cancel"
+            style: "cancel",
           },
-          { 
-            text: "Log Out", 
+          {
+            text: "Log Out",
             onPress: () => {
               logout();
-              router.replace('/auth/login');
+              router.replace("/auth/login");
             },
-            style: "destructive"
-          }
-        ]
+            style: "destructive",
+          },
+        ],
       );
     }
   };
-  
+
   const menuItems = [
     {
-      title: 'Account',
+      title: "Account",
       items: [
         {
           icon: <User size={20} color={colors.primary} />,
-          label: 'Personal Information',
-          onPress: () => router.push('/profile/personal-info'),
+          label: "Personal Information",
+          onPress: () => router.push("/profile/personal-info"),
         },
         {
           icon: <Settings size={20} color={colors.primary} />,
-          label: 'Preferences',
-          onPress: () => router.push('/profile/preferences'),
+          label: "Preferences",
+          onPress: () => router.push("/profile/preferences"),
         },
         {
           icon: <CreditCard size={20} color={colors.primary} />,
-          label: 'Payment Methods',
-          onPress: () => router.push('/profile/payment'),
+          label: "Payment Methods",
+          onPress: () => router.push("/profile/payment"),
         },
       ],
     },
     {
-      title: 'Other',
+      title: "Other",
       items: [
         {
           icon: <Bell size={20} color={colors.primary} />,
-          label: 'Notifications',
-          onPress: () => router.push('/profile/notifications'),
+          label: "Notifications",
+          onPress: () => router.push("/profile/notifications"),
         },
         {
           icon: <HelpCircle size={20} color={colors.primary} />,
-          label: 'Help & Support',
-          onPress: () => router.push('/profile/support'),
+          label: "Help & Support",
+          onPress: () => router.push("/profile/support"),
         },
         {
           icon: <LogOut size={20} color={colors.error} />,
-          label: 'Log Out',
+          label: "Log Out",
           onPress: handleLogout,
           textColor: colors.error,
         },
       ],
     },
   ];
-  
+
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -98,25 +106,30 @@ export default function ProfileScreen() {
       >
         <View style={styles.profileHeader}>
           <Image
-            source={{ uri: user?.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80' }}
+            source={{
+              uri: user?.profileImage ||
+                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+            }}
             style={styles.profileImage}
             contentFit="cover"
           />
-          <Text style={styles.profileName}>{user?.name || 'User'}</Text>
-          <Text style={styles.profileEmail}>{user?.email || 'user@example.com'}</Text>
-          
-          <TouchableOpacity 
+          <Text style={styles.profileName}>{user?.firstName || "User"}</Text>
+          <Text style={styles.profileEmail}>
+            {user?.email || "user@example.com"}
+          </Text>
+
+          <TouchableOpacity
             style={styles.editProfileButton}
-            onPress={() => router.push('/profile/edit')}
+            onPress={() => router.push("/profile/edit")}
           >
             <Text style={styles.editProfileText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
-        
+
         {menuItems.map((section, sectionIndex) => (
           <View key={sectionIndex} style={styles.menuSection}>
             <Text style={styles.menuSectionTitle}>{section.title}</Text>
-            
+
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity
                 key={itemIndex}
@@ -125,10 +138,12 @@ export default function ProfileScreen() {
               >
                 <View style={styles.menuItemLeft}>
                   {item.icon}
-                  <Text style={[
-                    styles.menuItemLabel,
-                    item.textColor ? { color: item.textColor } : null
-                  ]}>
+                  <Text
+                    style={[
+                      styles.menuItemLabel,
+                      item.textColor ? { color: item.textColor } : null,
+                    ]}
+                  >
                     {item.label}
                   </Text>
                 </View>
@@ -137,7 +152,7 @@ export default function ProfileScreen() {
             ))}
           </View>
         ))}
-        
+
         <View style={styles.versionContainer}>
           <Text style={styles.versionText}>Version 1.0.0</Text>
         </View>
@@ -159,7 +174,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   profileHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
   },
   profileImage: {
@@ -170,7 +185,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
     marginBottom: 4,
   },
@@ -187,7 +202,7 @@ const styles = StyleSheet.create({
   },
   editProfileText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: colors.primary,
   },
   menuSection: {
@@ -195,21 +210,21 @@ const styles = StyleSheet.create({
   },
   menuSectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
     marginBottom: 12,
   },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   menuItemLabel: {
     fontSize: 16,
@@ -217,7 +232,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   versionContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 24,
     marginBottom: 16,
   },
@@ -226,3 +241,4 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
 });
+
