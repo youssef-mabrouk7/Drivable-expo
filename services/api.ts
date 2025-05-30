@@ -73,6 +73,14 @@ export const lessonsAPI = {
     return apiRequest("/sessions");
   },
 
+  getUserRegistrations: async () => {
+    return apiRequest("/registrations");
+  },
+
+  getUserRegistrationsById: async (id: number) => {
+    return apiRequest(`/registrations/${id}`);
+  },
+
   getLessonById: async (id: string) => {
     return apiRequest(`/sessions/${id}`);
   },
