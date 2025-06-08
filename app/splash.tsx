@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image, Animated } from 'react-native';
-import { useRouter } from 'expo-router';
 import { colors } from '@/constants/colors';
 
 export default function SplashScreen() {
-  const router = useRouter();
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.8);
 
@@ -23,13 +21,6 @@ export default function SplashScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-
-    // Navigate to auth screen after delay
-    const timer = setTimeout(() => {
-      router.replace('auth' as any);
-    }, 2000);
-
-    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -81,4 +72,4 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
-}); 
+});

@@ -52,9 +52,8 @@ export default function RegisterScreen() {
         age: "30", // Default age
         handicapType: 0,
         transmissionType: 0, // Default to automatic
-        role: 1,
       });
-      router.replace("/tabs/schedule");
+      router.replace("/tabs");
     } catch (error) {
       return;
     }

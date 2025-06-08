@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -7,31 +7,84 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Calendar } from "lucide-react-native";
-import { useSessionStore } from "@/store/SessionStore";
+import { Calendar, CheckCircle, Clock } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { useRegistrationStore } from "@/store/RegistrationStore";
+import { useUserStore } from "@/store/userStore";
 import { SessionCard } from "@/components/SessionCard";
 import { EmptyState } from "@/components/EmptyState";
 import { colors } from "@/constants/colors";
-import { Session } from "@/types";
-
-type TabType = "upcoming" | "past";
+import { Registration } from "@/types";
 
 export default function SessionsScreen() {
-  const [activeTab, setActiveTab] = useState<TabType>("upcoming");
-  const { sessions, fetchSessions, isLoading } = useSessionStore();
+  const router = useRouter();
+  const { 
+    registrations, 
+    fetchUserRegistrations, 
+    isLoading, 
+    error,
+    clearError
+  } = useRegistrationStore();
+
+  const { isAuthenticated, checkAuthStatus } = useUserStore();
 
   useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
+    const initializeScreen = async () => {
+      // Check authentication status first
+      const isAuth = await checkAuthStatus();
+      if (!isAuth) {
+        router.replace("/auth/login");
+        return;
+      }
+      
+      // If authenticated, fetch registrations
+      fetchUserRegistrations();
+    };
 
-  const filterSessions = (sessions: Session[]) => {
+    initializeScreen();
+  }, [fetchUserRegistrations, checkAuthStatus, router]);
+
+  useEffect(() => {
+    if (error) {
+      // If we get a 403 or authentication error, redirect to login
+      if (error.includes("403") || error.includes("Unauthorized") || error.includes("authentication")) {
+        router.replace("/auth/login");
+        return;
+      }
+      
+      // Clear error after showing it
+      const timer = setTimeout(() => {
+        clearError();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, clearError, router]);
+
+  const isSessionCompleted = (registration: Registration): boolean => {
+    if (!registration.session?.datetime) return false;
+    const sessionDate = new Date(registration.session.datetime);
     const now = new Date();
-    return sessions.filter((session) => {
-      const sessionDate = new Date(session.date);
-      return activeTab === "upcoming"
-        ? sessionDate >= now
-        : sessionDate < now;
-    });
+    return sessionDate < now;
+  };
+
+  const getStatusDisplay = (registration: Registration) => {
+    const completed = isSessionCompleted(registration);
+    
+    if (completed) {
+      return {
+        icon: <CheckCircle size={16} color={colors.success} />,
+        text: "Completed",
+        textColor: colors.success,
+        backgroundColor: colors.success + "20"
+      };
+    } else {
+      return {
+        icon: <Clock size={16} color={colors.primary} />,
+        text: "Scheduled",
+        textColor: colors.primary,
+        backgroundColor: colors.primary + "20"
+      };
+    }
   };
 
   const renderSessions = () => {
@@ -43,61 +96,90 @@ export default function SessionsScreen() {
       );
     }
 
-    const filteredSessions = filterSessions(sessions);
+    if (error) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={async () => {
+              // Check auth before retrying
+              const isAuth = await checkAuthStatus();
+              if (!isAuth) {
+                router.replace("/auth/login");
+                return;
+              }
+              fetchUserRegistrations();
+            }}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
 
-    if (!filteredSessions || filteredSessions.length === 0) {
+    if (!registrations || registrations.length === 0) {
       return (
         <EmptyState
-          title={activeTab === "upcoming"
-            ? "No upcoming sessions"
-            : "No past sessions"}
-          description={activeTab === "upcoming"
-            ? "You don't have any upcoming sessions scheduled."
-            : "You haven't completed any sessions yet. Your history will appear here after your first session."}
+          title="No sessions found"
+          description="You don't have any registered sessions yet. Book a session to get started!"
           icon={<Calendar size={48} color={colors.textSecondary} />}
         />
       );
     }
 
-    return filteredSessions.map((session) => (
-      <SessionCard key={session.id} session={session} />
-    ));
+    // Filter registrations that have session data
+    const registrationsWithSessions = registrations.filter(registration => registration.session);
+
+    // If no registrations have session data, show a different message
+    if (registrationsWithSessions.length === 0) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            Found {registrations.length} registrations but no session data loaded.
+          </Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={fetchUserRegistrations}
+          >
+            <Text style={styles.retryButtonText}>Retry Loading Sessions</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    // Sort registrations by session date (most recent first)
+    const sortedRegistrations = [...registrationsWithSessions].sort((a, b) => {
+      if (!a.session?.datetime || !b.session?.datetime) return 0;
+      return new Date(b.session.datetime).getTime() - new Date(a.session.datetime).getTime();
+    });
+
+    return sortedRegistrations.map((registration) => {
+      const status = getStatusDisplay(registration);
+      
+      return (
+        <View key={registration.id} style={styles.sessionContainer}>
+          <View style={styles.statusContainer}>
+            <View style={[styles.statusBadge, { backgroundColor: status.backgroundColor }]}>
+              {status.icon}
+              <Text style={[styles.statusText, { color: status.textColor }]}>
+                {status.text}
+              </Text>
+            </View>
+          </View>
+          <SessionCard session={registration.session!} />
+        </View>
+      );
+    });
   };
 
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <View style={styles.header}>
         <Text style={styles.title}>Your Sessions</Text>
-      </View>
-
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "upcoming" && styles.activeTab]}
-          onPress={() => setActiveTab("upcoming")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "upcoming" && styles.activeTabText,
-            ]}
-          >
-            Upcoming
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "past" && styles.activeTab]}
-          onPress={() => setActiveTab("past")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "past" && styles.activeTabText,
-            ]}
-          >
-            Past
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.subtitle}>
+          {registrations.length} session{registrations.length !== 1 ? 's' : ''} registered
+        </Text>
       </View>
 
       <ScrollView
@@ -118,47 +200,46 @@ const styles = StyleSheet.create({
     paddingTop: 32,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     paddingTop: 16,
+    marginBottom: 16,
   },
   title: {
     fontSize: 20,
     fontWeight: "700",
     color: colors.text,
+    marginBottom: 4,
   },
-  tabsContainer: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    marginBottom: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: "500",
+  subtitle: {
+    fontSize: 14,
     color: colors.textSecondary,
-  },
-  activeTabText: {
-    color: colors.primary,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 16,
-    paddingTop: 16,
+    paddingTop: 0,
+  },
+  sessionContainer: {
+    marginBottom: 16,
+  },
+  statusContainer: {
+    marginBottom: 8,
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  statusText: {
+    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: "500",
   },
   loadingContainer: {
     padding: 24,
@@ -168,4 +249,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
   },
-}); 
+  errorContainer: {
+    padding: 24,
+    alignItems: "center",
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.error,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+});
+

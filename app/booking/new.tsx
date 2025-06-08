@@ -19,12 +19,9 @@ import {
 } from "lucide-react-native";
 import { useLessonStore } from "@/store/LessonStore";
 import { DatePicker } from "@/components/DatePicker";
-import { InstructorCard } from "@/components/InstructorCard";
 import { Button } from "@/components/Button";
 import { colors } from "@/constants/colors";
 import {
-  drivingCenters,
-  instructors,
   lessonTopics,
   timeSlots,
 } from "@/constants/mockData";
@@ -38,27 +35,27 @@ export default function BookingScreen() {
   const [bookingData, setBookingData] = useState<BookingFormData>({});
 
   const handleDateChange = (date: Date) => {
-    setBookingData((prev) => ({ ...prev, date }));
+    setBookingData((prev: BookingFormData) => ({ ...prev, date }));
   };
 
   const handleTimeSelect = (time: string) => {
-    setBookingData((prev) => ({ ...prev, time }));
+    setBookingData((prev: BookingFormData) => ({ ...prev, time }));
   };
 
   const handleDurationSelect = (duration: number) => {
-    setBookingData((prev) => ({ ...prev, duration }));
+    setBookingData((prev: BookingFormData) => ({ ...prev, duration }));
   };
 
   const handleInstructorSelect = (instructorId: string) => {
-    setBookingData((prev) => ({ ...prev, instructorId }));
+    setBookingData((prev: BookingFormData) => ({ ...prev, instructorId }));
   };
 
   const handleTopicSelect = (topic: string) => {
-    setBookingData((prev) => ({ ...prev, topic }));
+    setBookingData((prev: BookingFormData) => ({ ...prev, topic }));
   };
 
   const handleNotesChange = (notes: string) => {
-    setBookingData((prev) => ({ ...prev, notes }));
+    setBookingData((prev: BookingFormData) => ({ ...prev, notes }));
   };
 
   const handleNextStep = () => {
@@ -78,9 +75,14 @@ export default function BookingScreen() {
   };
 
   const handleBookLesson = async () => {
+    if (!bookingData.sessionId) {
+      console.error("No session selected");
+      return;
+    }
+
     try {
-      await bookLesson(bookingData);
-      router.replace("/app/booking/confirmation");
+      await bookLesson(bookingData.sessionId);
+      router.replace("/booking/confirmation");
     } catch (error) {
       console.error("Failed to book lesson:", error);
     }
@@ -114,7 +116,7 @@ export default function BookingScreen() {
             </View>
 
             <DatePicker
-              selectedDate={bookingData.date}
+              selectedDate={bookingData.date || new Date()}
               onDateChange={handleDateChange}
               minDate={new Date()}
             />
@@ -267,11 +269,11 @@ export default function BookingScreen() {
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Date:</Text>
                 <Text style={styles.summaryValue}>
-                  {bookingData.date.toLocaleDateString("en-US", {
+                  {bookingData.date?.toLocaleDateString("en-US", {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
-                  })}
+                  }) || 'Not selected'}
                 </Text>
               </View>
 

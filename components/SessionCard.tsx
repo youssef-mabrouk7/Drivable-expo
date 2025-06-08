@@ -1,6 +1,7 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Calendar, MapPin, Car } from "lucide-react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
+import { useRouter } from "expo-router";
+import { Calendar, Clock, MapPin, Car } from "lucide-react-native";
 import { Session } from "@/types";
 import { colors } from "@/constants/colors";
 
@@ -9,64 +10,100 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session }: SessionCardProps) {
-  const sessionDate = new Date(session.date);
+  const router = useRouter();
+  const sessionDate = new Date(session.datetime);
+
+  const formattedDate = sessionDate.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  const formattedTime = sessionDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'EASY':
+      case "EASY":
         return colors.success;
-      case 'MEDIUM':
-        return colors.warning;
-      case 'HARD':
+      case "MEDIUM":
+        return colors.secondary;
+      case "HARD":
         return colors.error;
       default:
         return colors.primary;
     }
   };
 
+  const handlePress = () => {
+    router.push({
+      pathname: "/session/[id]",
+      params: { id: session.id },
+    });
+  };
+
   return (
-    <View style={styles.container}>
+    <TouchableOpacity 
+      style={styles.container}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Car size={20} color={colors.primary} />
-          <Text style={styles.scenarioName}>{session.scenario.name}</Text>
-        </View>
-        <View style={[styles.difficultyBadge, { backgroundColor: getDifficultyColor(session.scenario.difficulty) }]}>
-          <Text style={styles.difficultyText}>{session.scenario.difficulty}</Text>
+          <Text style={styles.scenarioName}>{session.scenario?.name || 'Driving Session'}</Text>
+          {session.scenario && (
+            <View
+              style={[styles.difficultyBadge, {
+                backgroundColor: getDifficultyColor(session.scenario.difficulty) + "20",
+              }]}
+            >
+              <Text
+                style={[styles.difficultyText, {
+                  color: getDifficultyColor(session.scenario.difficulty),
+                }]}
+              >
+                {session.scenario.difficulty}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
-      <View style={styles.details}>
-        <View style={styles.detailRow}>
-          <Calendar size={16} color={colors.textSecondary} />
-          <Text style={styles.detailText}>
-            {sessionDate.toLocaleDateString("en-US", {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+      <View style={styles.content}>
+        <View style={styles.infoRow}>
+          <Calendar size={16} color={colors.primary} />
+          <Text style={styles.infoText}>{formattedDate}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Clock size={16} color={colors.primary} />
+          <Text style={styles.infoText}>{formattedTime}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <MapPin size={16} color={colors.primary} />
+          <Text style={styles.infoText}>{session.location || 'Location TBD'}</Text>
+        </View>
+
+        {session.scenario && (
+          <View style={styles.infoRow}>
+            <Car size={16} color={colors.primary} />
+            <Text style={styles.infoText}>
+              {session.scenario.environmentType}
+            </Text>
+          </View>
+        )}
+
+        {session.scenario && (
+          <Text style={styles.scenarioId}>
+            Scenario #{session.scenario.scenarioID}
           </Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <MapPin size={16} color={colors.textSecondary} />
-          <Text style={styles.detailText}>{session.location}</Text>
-        </View>
+        )}
       </View>
-
-      <View style={styles.footer}>
-        <View style={styles.environmentBadge}>
-          <Text style={styles.environmentText}>
-            {session.scenario.environmentType}
-          </Text>
-        </View>
-        <Text style={styles.scenarioId}>
-          Scenario #{session.scenario.scenarioID}
-        </Text>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -78,6 +115,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+    }),
   },
   header: {
     flexDirection: "row",
@@ -89,12 +143,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    justifyContent: "space-between",
   },
   scenarioName: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.text,
-    marginLeft: 8,
   },
   difficultyBadge: {
     paddingHorizontal: 8,
@@ -102,46 +156,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   difficultyText: {
-    color: "white",
     fontSize: 12,
     fontWeight: "500",
   },
-  details: {
+  content: {
     marginBottom: 12,
   },
-  detailRow: {
+  infoRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
   },
-  detailText: {
+  infoText: {
     marginLeft: 8,
     fontSize: 14,
     color: colors.textSecondary,
   },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 12,
-  },
-  environmentBadge: {
-    backgroundColor: colors.background,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  environmentText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontWeight: "500",
-  },
   scenarioId: {
     fontSize: 12,
     color: colors.textSecondary,
+    marginTop: 8,
   },
-}); 
+});
+

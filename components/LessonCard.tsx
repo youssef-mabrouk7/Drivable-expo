@@ -11,7 +11,6 @@ import { useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
 import { Lesson } from "@/types";
 import { colors } from "@/constants/colors";
-import { drivingCenters, instructors } from "@/constants/mockData";
 
 type LessonCardProps = {
   lesson: Lesson;

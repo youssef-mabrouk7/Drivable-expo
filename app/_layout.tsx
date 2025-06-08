@@ -1,82 +1,50 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
-import { Platform } from "react-native";
-import { ErrorBoundary } from "./error-boundary";
-import { useUserStore } from "@/store/userStore";
+import { useColorScheme } from "react-native";
 
 export const unstable_settings = {
-  initialRouteName: "(tabs)",
+  initialRouteName: "splash",
 };
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-import * as SplashScreen from "expo-splash-screen";
-
-SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     ...FontAwesome.font,
   });
 
+  const colorScheme = useColorScheme();
+
   useEffect(() => {
-    if (error) {
-      console.error(error);
-      throw error;
-    }
+    if (error) throw error;
   }, [error]);
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(console.error);
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
   return (
-    <ErrorBoundary>
-      <RootLayoutNav />
-    </ErrorBoundary>
-  );
-}
-
-function RootLayoutNav() {
-  const { isAuthenticated, checkAuthStatus } = useUserStore();
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Check if the user is authenticated
-    const checkAuth = async () => {
-      const isAuth = await checkAuthStatus();
-      const inAuthGroup = segments[0] === "auth";
-
-      if (!isAuth && !inAuthGroup) {
-        // Redirect to the login page if not authenticated
-        router.replace("/auth/login");
-      } else if (isAuth && inAuthGroup) {
-        // Redirect to the home page if authenticated and on an auth page
-        router.replace("/tabs");
-      }
-    };
-
-    checkAuth();
-  }, [isAuthenticated, segments]);
-
-  return (
-    <Stack>
-      <Stack.Screen
-        name="tabs"
-        options={{ headerShown: true, title: "Home" }}
-      />
-      <Stack.Screen name="lesson/[id]" options={{ headerShown: true }} />
-      <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-      <Stack.Screen name="auth/index" options={{ headerShown: false }} />
-    </Stack>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="splash" options={{ headerShown: false }} />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="tabs"
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen name="booking" options={{ headerShown: false }} />
+        <Stack.Screen name="lesson" options={{ headerShown: false }} />
+        <Stack.Screen name="profile" options={{ headerShown: false }} />
+      </Stack>
+    </ThemeProvider>
   );
 }
 

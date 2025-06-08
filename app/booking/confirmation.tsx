@@ -10,7 +10,7 @@ export default function ConfirmationScreen() {
   const router = useRouter();
   
   const handleViewSchedule = () => {
-    router.replace('/tabs/schedule');
+    router.replace('/tabs/sessions'); // Changed from '/tabs/schedule' to existing route
   };
   
   const handleGoHome = () => {

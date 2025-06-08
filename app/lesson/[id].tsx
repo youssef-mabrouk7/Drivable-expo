@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  RouteNames,
   Stack,
   useLocalSearchParams,
   useRouter,
@@ -20,12 +19,11 @@ import {
   Car,
   Clock,
   MapPin,
-  User,
 } from "lucide-react-native";
 import { useLessonStore } from "@/store/LessonStore";
 import { Button } from "@/components/Button";
 import { colors } from "@/constants/colors";
-import { Instructor, Lesson } from "@/types";
+import { Lesson } from "@/types";
 import { lessonsAPI } from "@/services/api";
 
 export default function LessonDetailScreen() {
@@ -35,11 +33,6 @@ export default function LessonDetailScreen() {
 
   const { upcomingLessons, pastLessons, isLoading } = useLessonStore();
   const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [selectedInstructor, setSelectedInstructor] = useState<
-    Instructor | null
-  >(null);
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [isLoadingInstructors, setIsLoadingInstructors] = useState(false);
 
   useEffect(() => {
     // Find the lesson in either upcoming or past lessons
@@ -52,34 +45,18 @@ export default function LessonDetailScreen() {
     }
   }, [id, upcomingLessons, pastLessons]);
 
-  useEffect(() => {
-    const fetchInstructors = async () => {
-      setIsLoadingInstructors(true);
-      try {
-        const response = await fetch("YOUR_BACKEND_API_URL/instructors");
-        const data = await response.json();
-        setInstructors(data);
-      } catch (error) {
-        console.error("Error fetching instructors:", error);
-      } finally {
-        setIsLoadingInstructors(false);
-      }
-    };
-
-    fetchInstructors();
-  }, []);
-
   const handleBookLesson = async () => {
     if (!lesson) return;
 
     try {
-      const response = await lessonsAPI.bookLesson(id);
+      // Register for the session using the lesson's session ID
+      const response = await lessonsAPI.bookLesson(lesson.id);
       if (!response) {
         throw new Error("Failed to book lesson");
       }
 
       // Navigate to the sessions tab
-      router.replace("/tabs/index" as RouteNames);
+      router.replace("/tabs");
     } catch (error) {
       console.error("Error booking lesson:", error);
       // You might want to show an error message to the user here

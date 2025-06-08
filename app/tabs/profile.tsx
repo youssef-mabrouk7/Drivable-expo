@@ -85,7 +85,7 @@ export default function ProfileScreen() {
         {
           icon: <HelpCircle size={20} color={colors.primary} />,
           label: "Help & Support",
-          onPress: () => router.push("/profile/support"),
+          onPress: () => router.push("/profile/help"), // Changed from "/profile/support" to existing route
         },
         {
           icon: <LogOut size={20} color={colors.error} />,

@@ -1,5 +1,87 @@
-// Type definitions for the app
+// Type definitions for the app - Updated to match backend API
 
+// Auth DTOs
+export interface RegisterUserDto {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  age?: string;
+  phone?: string;
+  transmissionType?: number; // 0 for automatic, 1 for manual
+  handicapType?: number;
+}
+
+export interface LoginUserDto {
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponseDTO {
+  token: string;
+  expiresIn: number; // Token validity in milliseconds
+}
+
+export interface LoginResponseDto {
+  token: string;
+  expiresIn: number; // Token validity in milliseconds
+}
+
+// Backend Models
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  created_at: string;
+  // Additional fields that might be in your User model
+  age?: string;
+  phone?: string;
+  transmissionType?: number;
+  handicapType?: number;
+  lessonsCompleted?: number;
+  profileImage?: string;
+  // Computed properties for frontend
+  fullName?: string;
+  address?: string;
+  preferences?: {
+    preferredInstructorId?: string;
+    preferredCenterId?: string;
+    preferredDays?: string[];
+    preferredTimes?: string[];
+  };
+}
+
+export interface Session {
+  id: string;
+  datetime: string; // ISO date string
+  duration_minutes: number;
+  max_capacity: number;
+  price: number;
+  instructor: string;
+  created_at: string;
+  // Additional fields that might be in your Session model
+  scenario?: Scenario;
+  location?: string;
+  topic?: string;
+  notes?: string;
+  status?: string;
+}
+
+export interface Registration {
+  id: string;
+  user_id: string;
+  session_id: string;
+  payment_status: string;
+  score?: number;
+  payment_id?: string;
+  created_at: string;
+  // Include session details when populated
+  session?: Session;
+  user?: User;
+}
+
+// Legacy types for backward compatibility
 export interface Scenario {
   scenarioID: number;
   name: string;
@@ -7,100 +89,32 @@ export interface Scenario {
   difficulty: "EASY" | "MEDIUM" | "HARD";
 }
 
+// Map Session to legacy Lesson for frontend compatibility
 export interface Lesson {
-  id: number;
+  id: string;
+  instructorId: string;
+  centerId: string;
   scenario: Scenario;
-  date: string;
+  date: Date;
+  duration: number;
+  status: string;
+  topic: string;
+  notes: string;
+  price: number;
   location: string;
+  rating?: number;
+  feedback?: string;
 }
 
-export type Instructor = {
-  id: string;
-  name: string;
-  rating: number;
-  reviews: number;
-  experience: string;
-  avatar: string;
-  specialties: string[];
-  bio: string;
-  availability: string[];
-};
-
-export type DrivingCenter = {
-  id: string;
-  name: string;
-  address: string;
-  rating: number;
-  image?: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-};
-
-export type User = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  age: string;
-  transmissionType: number; // 0 for automatic, 1 for manual
-  phone?: string;
-  password?: string;
-  role?: number;
-  lessonsCompleted: number;
-  profileImage?: string;
-  preferences?: {
-    preferredInstructorId?: string;
-    preferredCenterId?: string;
-    preferredDays?: string[];
-    preferredTimes?: string[];
-  };
-  handicapType?: number;
-};
-
-// API response types
-export type ApiResponse<T> = {
-  success: boolean;
-  data: T;
-  message?: string;
-};
-
-export type ErrorResponse = {
-  success: false;
-  message: string;
-  errors?: Record<string, string[]>;
-};
-
-export type LoginResponse = {
-  token: string;
-  user: User;
-};
-
-export type RegisterResponse = {
-  token: string;
-  user: User;
-};
-
-export type PaginatedResponse<T> = {
-  data: T[];
-  meta: {
-    currentPage: number;
-    lastPage: number;
-    perPage: number;
-    total: number;
-  };
-};
-
-export interface Session {
-  id: number;
-  scenario: Scenario;
-  date: string;
-  location: string;
+// Add BookingFormData type for frontend forms
+export interface BookingFormData {
+  sessionId?: string;
+  date?: Date;
+  time?: string;
+  duration?: number;
+  instructorId?: string;
+  topic?: string;
+  notes?: string;
 }
 
-export interface SessionState {
-  sessions: Session[];
-  isLoading: boolean;
-  error: string | null;
-}
+// ...existing code for other types...

@@ -10,30 +10,47 @@ import {
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Calendar, Plus, Search } from "lucide-react-native";
-import { useLessonStore } from "@/store/LessonStore";
+import { Calendar, Plus, Search, MapPin, Clock } from "lucide-react-native";
+import { useSessionStore } from "@/store/SessionStore";
 import { useUserStore } from "@/store/userStore";
-import { LessonCard } from "@/components/LessonCard";
+import { SessionCard } from "@/components/SessionCard";
 import { EmptyState } from "@/components/EmptyState";
 import { colors } from "@/constants/colors";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useUserStore();
-  const { upcomingLessons, fetchLessons, isLoading } = useLessonStore();
+  const { sessions, fetchSessions, isLoading } = useSessionStore();
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    fetchLessons();
-  }, [fetchLessons]);
+    fetchSessions();
+  }, [fetchSessions]);
 
   const handleBookLesson = () => {
     router.push("/booking/new");
   };
 
-  const handleViewSchedule = () => {
-    router.push("/schedule");
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      // You can implement search functionality here
+      // For now, we'll just filter the existing sessions
+      console.log("Searching for:", searchQuery);
+    }
   };
+
+  // Filter sessions based on search query
+  const filteredSessions = sessions.filter((session) => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+    return (
+      session.scenario?.name.toLowerCase().includes(query) ||
+      session.location?.toLowerCase().includes(query) ||
+      session.topic?.toLowerCase().includes(query) ||
+      session.instructor.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -59,55 +76,62 @@ export default function HomeScreen() {
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search lessons..."
+            placeholder="Search sessions..."
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
           />
-          <TouchableOpacity style={styles.searchButton}>
+          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
             <Search size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
 
-        {/* Upcoming events section */}
+        {/* Available sessions section */}
         <View style={styles.eventsHeader}>
-          <Text style={styles.eventsTitle}>Upcoming Lessons</Text>
+          <Text style={styles.eventsTitle}>Available Sessions</Text>
+          <Text style={styles.eventsSubtitle}>
+            {filteredSessions.length} session
+            {filteredSessions.length !== 1 ? "s" : ""} available
+          </Text>
         </View>
 
         <View style={styles.schoolInfo}>
-          <Text style={styles.schoolName}>Driving School</Text>
+          <Text style={styles.schoolName}>Driving Sessions</Text>
           <View style={styles.schoolDetails}>
             <View style={styles.detailItem}>
               <MapPin size={16} color={colors.white} />
-              <Text style={styles.detailText}>Location</Text>
+              <Text style={styles.detailText}>Various Locations</Text>
             </View>
             <View style={styles.detailItem}>
               <Clock size={16} color={colors.white} />
-              <Text style={styles.detailText}>Duration</Text>
+              <Text style={styles.detailText}>Multiple Durations</Text>
             </View>
           </View>
         </View>
 
-        {isLoading
-          ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Loading your lessons...</Text>
-            </View>
-          )
-          : upcomingLessons
-          ? (
-            upcomingLessons.map((lesson) => (
-              <LessonCard key={lesson.id} lesson={lesson} />
-            ))
-          )
-          : (
-            <EmptyState
-              title="No upcoming lessons"
-              description="Book your first driving lesson to start your journey to becoming a confident driver."
-              icon={<Calendar size={48} color={colors.textSecondary} />}
-              actionLabel="Book a Lesson"
-              onAction={handleBookLesson}
-            />
-          )}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading available sessions...</Text>
+          </View>
+        ) : filteredSessions.length > 0 ? (
+          filteredSessions.map((session) => (
+            <SessionCard key={session.id} session={session} />
+          ))
+        ) : (
+          <EmptyState
+            title={
+              searchQuery ? "No sessions found" : "No sessions available"
+            }
+            description={
+              searchQuery
+                ? "Try adjusting your search terms to find sessions."
+                : "No driving sessions are currently available. Check back later for new sessions."
+            }
+            icon={<Calendar size={48} color={colors.textSecondary} />}
+            actionLabel="Book a Session"
+            onAction={handleBookLesson}
+          />
+        )}
       </ScrollView>
 
       {/* Floating action button */}
@@ -115,23 +139,11 @@ export default function HomeScreen() {
         style={styles.fab}
         onPress={handleBookLesson}
       >
-        <Calendar size={24} color={colors.white} />
+        <Plus size={24} color={colors.white} />
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
-
-const MapPin = ({ size, color }: { size: number; color: string }) => (
-  <View style={{ width: size, height: size, marginRight: 4 }}>
-    <View style={[styles.mapPin, { backgroundColor: color }]} />
-  </View>
-);
-
-const Clock = ({ size, color }: { size: number; color: string }) => (
-  <View style={{ width: size, height: size, marginRight: 4 }}>
-    <View style={[styles.clock, { borderColor: color }]} />
-  </View>
-);
 
 const styles = StyleSheet.create({
   container: {
@@ -208,6 +220,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
+  eventsSubtitle: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "400",
+    marginTop: 4,
+    opacity: 0.9,
+  },
   schoolInfo: {
     backgroundColor: colors.primary,
     paddingHorizontal: 16,
@@ -233,17 +252,6 @@ const styles = StyleSheet.create({
   detailText: {
     color: colors.white,
     fontSize: 14,
-  },
-  mapPin: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  clock: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 1,
   },
   loadingContainer: {
     padding: 24,

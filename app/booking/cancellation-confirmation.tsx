@@ -10,7 +10,7 @@ export default function CancellationConfirmationScreen() {
   const router = useRouter();
 
   const handleGoToSchedule = () => {
-    router.replace('/tabs/schedule');
+    router.replace('/tabs/sessions');
   };
 
   return (
@@ -67,4 +67,4 @@ const styles = StyleSheet.create({
     width: '80%',
     maxWidth: 300,
   },
-}); 
+});

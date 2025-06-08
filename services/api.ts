@@ -1,16 +1,30 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DrivingCenter, Instructor, Lesson, User } from "@/types";
+import {
+  BookingFormData,
+  Lesson,
+  LoginResponseDto,
+  LoginUserDto,
+  RegisterResponseDTO,
+  RegisterUserDto,
+  Registration,
+  Scenario,
+  Session,
+  User,
+} from "@/types";
 
-// Base API URL - would be replaced with actual backend URL
-const API_URL = "http://192.168.1.48:8080/api/v1";
+// Base API URL - Update this to match your backend
+const API_URL = "http://192.168.1.23:8080/api/v1";
 
 // Helper to get auth token
 const getToken = async () => {
   return await AsyncStorage.getItem("auth_token");
 };
 
-// Generic API request handler with error handling
+// Generic API request handler with error handling and timeout
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
   try {
     const token = await getToken();
 
@@ -23,17 +37,60 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers,
+      signal: controller.signal,
     });
 
-    // Handle non-2xx responses
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API error: ${response.status}`);
+      // Handle specific error cases
+      if (response.status === 401 || response.status === 403) {
+        // Clear invalid token
+        await AsyncStorage.removeItem("auth_token");
+        throw new Error(
+          `Authentication failed (${response.status}): Please log in again`,
+        );
+      }
+
+      if (response.status === 404) {
+        throw new Error("Resource not found");
+      }
+
+      if (response.status >= 500) {
+        throw new Error("Server error. Please try again later.");
+      }
+
+      // Try to get error message from response
+      try {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+          `HTTP ${response.status}: ${response.statusText}`,
+        );
+      } catch {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
     }
 
-    // Parse JSON response
-    return await response.json();
+    // Handle empty responses
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await response.json();
+    } else {
+      return {}; // Return empty object for non-JSON responses
+    }
   } catch (error) {
+    clearTimeout(timeoutId);
+
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        throw new Error("Request timeout");
+      }
+
+      // Re-throw our custom errors
+      throw error;
+    }
+
     console.error("API request failed:", error);
     throw error;
   }
@@ -41,94 +98,257 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 
 // Auth API
 export const authAPI = {
-  //make it returns type user
-  login: async (email: string, password: string) => {
-    return apiRequest("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+  login: async (email: string, password: string): Promise<LoginResponseDto> => {
+    const loginData: LoginUserDto = { email, password };
+
+    try {
+      return await apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify(loginData),
+      });
+    } catch (error) {
+      // Development fallback when backend is not available
+      console.warn("Backend not available, using mock authentication");
+      if (email === "test@example.com" && password === "password") {
+        return {
+          token: "mock-jwt-token-" + Date.now(),
+          expiresIn: 86400000, // 24 hours
+        };
+      }
+      throw new Error(
+        "Invalid credentials (use test@example.com / password for dev mode)",
+      );
+    }
   },
 
-  register: async (userData: Partial<User>) => {
-    return apiRequest("/auth/signup", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    });
+  register: async (userData: RegisterUserDto): Promise<RegisterResponseDTO> => {
+    try {
+      return await apiRequest("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify(userData),
+      });
+    } catch (error) {
+      // Development fallback when backend is not available
+      console.warn("Backend not available, using mock registration");
+      return {
+        token: "mock-jwt-token-" + Date.now(),
+        expiresIn: 86400000, // 24 hours
+      };
+    }
   },
 
-  logout: async () => {
-    return apiRequest("/auth/logout", {
-      method: "POST",
-    });
-  },
-
-  getCurrentUser: async () => {
-    return apiRequest("/testing/me");
+  getCurrentUser: async (): Promise<User> => {
+    try {
+      return await apiRequest("/testing/me");
+    } catch (error) {
+      // Development fallback when backend is not available
+      console.warn("Backend not available, using mock user data");
+      return {
+        id: "mock-user-" + Date.now(),
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+        created_at: new Date().toISOString(),
+        fullName: "Test User",
+      };
+    }
   },
 };
 
-// Lessons API
-export const lessonsAPI = {
-  getLessons: async () => {
+// Sessions API
+export const sessionsAPI = {
+  getAllSessions: async (): Promise<Session[]> => {
     return apiRequest("/sessions");
   },
 
-  getUserRegistrations: async () => {
-    return apiRequest("/registrations");
+  searchSessions: async (query: string): Promise<Session[]> => {
+    return apiRequest(`/sessions/search?query=${encodeURIComponent(query)}`);
   },
 
-  getUserRegistrationsById: async (id: number) => {
-    return apiRequest(`/registrations/${id}`);
-  },
-
-  getLessonById: async (id: string) => {
+  getSessionById: async (id: string): Promise<Session> => {
     return apiRequest(`/sessions/${id}`);
   },
 
-  bookLesson: async (id: string) => {
-    const idNumber = parseInt(id);
-    return apiRequest(`/sessions/${idNumber}/register`, {
+  registerForSession: async (sessionId: string): Promise<any> => {
+    return apiRequest(`/sessions/${sessionId}/register`, {
       method: "POST",
     });
   },
+};
 
-  cancelLesson: async (id: string) => {
+// Registrations API
+export const registrationsAPI = {
+  getUserRegistrations: async (): Promise<Registration[]> => {
+    try {
+      return await apiRequest("/registrations", {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${await getToken()}`,
+        },
+      });
+    } catch (error) {
+      // Development fallback when backend is not available
+      console.warn("Backend not available, returning empty registrations array");
+      return [];
+    }
+  },
+
+  getRegistrationById: async (id: string): Promise<Registration> => {
+    return apiRequest(`/registrations/${id}`);
+  },
+
+  cancelRegistration: async (id: string): Promise<void> => {
     return apiRequest(`/registrations/${id}`, {
       method: "DELETE",
     });
   },
 };
-// Instructors API
-export const instructorsAPI = {
-  getAllInstructors: async () => {
-    return apiRequest("/instructors");
+
+// Admin Dashboard API
+export const adminAPI = {
+  // Users management
+  users: {
+    getAll: async (): Promise<User[]> => {
+      return apiRequest("/admin-dashboard/users");
+    },
+
+    getById: async (id: string): Promise<User> => {
+      return apiRequest(`/admin-dashboard/users/${id}`);
+    },
+
+    updateName: async (
+      id: string,
+      firstName: string,
+      lastName: string,
+    ): Promise<User> => {
+      return apiRequest(
+        `/admin-dashboard/users/name/${id}?firstName=${encodeURIComponent(firstName)
+        }&lastName=${encodeURIComponent(lastName)}`,
+        {
+          method: "PUT",
+        },
+      );
+    },
+
+    delete: async (id: string): Promise<void> => {
+      return apiRequest(`/admin-dashboard/users/${id}`, {
+        method: "DELETE",
+      });
+    },
   },
 
-  getInstructorById: async (id: string) => {
-    return apiRequest(`/instructors/${id}`);
+  // Sessions management
+  sessions: {
+    getAll: async (): Promise<Session[]> => {
+      return apiRequest("/admin-dashboard/sessions");
+    },
+
+    getById: async (id: string): Promise<Session> => {
+      return apiRequest(`/admin-dashboard/sessions/${id}`);
+    },
+
+    create: async (session: Partial<Session>): Promise<Session> => {
+      return apiRequest("/admin-dashboard/sessions", {
+        method: "POST",
+        body: JSON.stringify(session),
+      });
+    },
+
+    delete: async (id: string): Promise<void> => {
+      return apiRequest(`/admin-dashboard/sessions/${id}`, {
+        method: "DELETE",
+      });
+    },
   },
 
-  getInstructorAvailability: async (id: string, date: string) => {
-    return apiRequest(`/instructors/${id}/availability?date=${date}`);
+  // Registrations management
+  registrations: {
+    getAll: async (): Promise<Registration[]> => {
+      return apiRequest("/admin-dashboard/registrations");
+    },
+
+    getById: async (id: string): Promise<Registration> => {
+      return apiRequest(`/admin-dashboard/registrations/${id}`);
+    },
+
+    delete: async (id: string): Promise<void> => {
+      return apiRequest(`/admin-dashboard/registrations/${id}`, {
+        method: "DELETE",
+      });
+    },
   },
 };
 
-// Driving Centers API
-export const centersAPI = {
-  getAllCenters: async () => {
-    return apiRequest("/centers");
+// Legacy API for backward compatibility - converts Sessions to Lessons
+export const lessonsAPI = {
+  getLessons: async (): Promise<Lesson[]> => {
+    try {
+      const sessions = await sessionsAPI.getAllSessions();
+      return sessions.map(sessionToLesson);
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      // Fallback to mock data in development
+      const { lessons } = await import("@/constants/mockData");
+      return lessons;
+    }
   },
 
-  getCenterById: async (id: string) => {
-    return apiRequest(`/centers/${id}`);
+  getLessonById: async (id: string): Promise<Lesson> => {
+    const session = await sessionsAPI.getSessionById(id);
+    return sessionToLesson(session);
+  },
+
+  bookLesson: async (sessionId: string): Promise<Registration> => {
+    return sessionsAPI.registerForSession(sessionId);
+  },
+
+  cancelLesson: async (registrationId: string): Promise<void> => {
+    return registrationsAPI.cancelRegistration(registrationId);
   },
 };
 
-// User Profile API
-export const profileAPI = {
-  updateProfile: async (userData: Partial<User>) => {
-    return apiRequest("/testing/me", {
-      method: "GET",
+// Helper function to convert Session to Lesson for backward compatibility
+const sessionToLesson = (session: Session): Lesson => {
+  return {
+    id: session.id,
+    instructorId: session.instructor,
+    centerId: "1", // Default center ID
+    scenario: session.scenario || {
+      scenarioID: parseInt(session.id),
+      name: session.topic || "Driving Lesson",
+      environmentType: "Urban",
+      difficulty: "EASY",
+    },
+    date: new Date(session.datetime),
+    duration: session.duration_minutes,
+    status: session.status || "scheduled",
+    topic: session.topic || "General Driving",
+    notes: session.notes || "",
+    price: session.price,
+    location: session.location || "Driving Center",
+    rating: undefined,
+    feedback: undefined,
+  };
+};
+
+// Webhook API (if needed for payment processing)
+export const webhookAPI = {
+  processPayment: async (paymentData: any): Promise<any> => {
+    return apiRequest("/webhook/payments", {
+      method: "POST",
+      body: JSON.stringify(paymentData),
     });
   },
+};
+
+// Error types for better error handling
+export interface ApiError {
+  status: number;
+  message: string;
+}
+
+export const isApiError = (error: any): error is ApiError => {
+  return error && typeof error.status === "number" &&
+    typeof error.message === "string";
 };

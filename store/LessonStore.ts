@@ -1,19 +1,22 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Lesson, Scenario } from "@/types";
-import { lessonsAPI } from "@/services/api";
+import { Lesson, Session, Registration } from "@/types";
+import { lessonsAPI, sessionsAPI, registrationsAPI } from "@/services/api";
 
 interface LessonState {
   upcomingLessons: Lesson[];
   pastLessons: Lesson[];
+  userRegistrations: Registration[];
   isLoading: boolean;
   error: string | null;
 
   // Actions
   fetchLessons: () => Promise<void>;
-  bookLesson: (id: string) => Promise<void>;
-  cancelLesson: (lessonId: number) => Promise<void>;
+  fetchUserRegistrations: () => Promise<void>;
+  bookLesson: (sessionId: string) => Promise<void>;
+  cancelLesson: (registrationId: string) => Promise<void>;
+  searchSessions: (query: string) => Promise<Session[]>;
 }
 
 export const useLessonStore = create<LessonState>()(
@@ -21,68 +24,95 @@ export const useLessonStore = create<LessonState>()(
     (set, get) => ({
       upcomingLessons: [],
       pastLessons: [],
+      userRegistrations: [],
       isLoading: false,
       error: null,
 
       fetchLessons: async () => {
         set({ isLoading: true, error: null });
         try {
-          const data = await lessonsAPI.getLessons();
+          // Fetch all available sessions and convert to lessons
+          const lessons = await lessonsAPI.getLessons();
+          const now = new Date();
+          
           set({
-            upcomingLessons: data,
+            upcomingLessons: lessons.filter(lesson => lesson.date > now),
+            pastLessons: lessons.filter(lesson => lesson.date <= now),
             isLoading: false,
           });
         } catch (error) {
           console.error("Error fetching lessons:", error);
           set({
-            error: error instanceof Error
-              ? error.message
-              : "Failed to fetch lessons",
+            error: error instanceof Error ? error.message : "Failed to fetch lessons",
             isLoading: false,
           });
         }
       },
 
-      bookLesson: async (id: string) => {
+      fetchUserRegistrations: async () => {
         set({ isLoading: true, error: null });
         try {
-          const newLesson = await lessonsAPI.bookLesson(id);
-
-          set((state) => ({
-            upcomingLessons: [...state.upcomingLessons, newLesson],
+          const registrations = await registrationsAPI.getUserRegistrations();
+          set({
+            userRegistrations: registrations,
             isLoading: false,
-          }));
+          });
+        } catch (error) {
+          console.error("Error fetching user registrations:", error);
+          set({
+            error: error instanceof Error ? error.message : "Failed to fetch registrations",
+            isLoading: false,
+          });
+        }
+      },
+
+      bookLesson: async (sessionId: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const registration = await lessonsAPI.bookLesson(sessionId);
+          
+          // Refresh user registrations to include the new booking
+          await get().fetchUserRegistrations();
+          
+          set({ isLoading: false });
         } catch (error) {
           console.error("Error booking lesson:", error);
           set({
-            error: error instanceof Error
-              ? error.message
-              : "Failed to book lesson",
+            error: error instanceof Error ? error.message : "Failed to book lesson",
             isLoading: false,
           });
+          throw error;
         }
       },
 
-      cancelLesson: async (lessonId: number) => {
+      cancelLesson: async (registrationId: string) => {
         set({ isLoading: true, error: null });
         try {
-          // Simulate network delay
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
+          await lessonsAPI.cancelLesson(registrationId);
+          
+          // Remove the cancelled registration from local state
           set((state) => ({
-            upcomingLessons: state.upcomingLessons.filter(
-              (lesson) => lesson.id !== lessonId,
+            userRegistrations: state.userRegistrations.filter(
+              (registration) => registration.id !== registrationId
             ),
             isLoading: false,
           }));
         } catch (error) {
-          console.error("Error cancelling lesson:", error);
+          console.error("Cancel lesson error:", error);
           set({
-            error: error instanceof Error
-              ? error.message
-              : "Failed to cancel lesson",
+            error: error instanceof Error ? error.message : "Failed to cancel lesson",
             isLoading: false,
           });
+          throw error;
+        }
+      },
+
+      searchSessions: async (query: string): Promise<Session[]> => {
+        try {
+          return await sessionsAPI.searchSessions(query);
+        } catch (error) {
+          console.error("Error searching sessions:", error);
+          return [];
         }
       },
     }),
