@@ -26,7 +26,9 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
   try {
-    const token = await getToken();
+    // Do not include Authorization header for login or registration
+    const isAuthEndpoint = endpoint === "/auth/login" || endpoint === "/auth/signup";
+    const token = isAuthEndpoint ? null : await getToken();
 
     const headers = {
       "Content-Type": "application/json",
@@ -65,7 +67,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-          `HTTP ${response.status}: ${response.statusText}`,
+            `HTTP ${response.status}: ${response.statusText}`,
         );
       } catch {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -75,7 +77,10 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
     // Handle empty responses
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
-      return await response.json();
+      // Parse JSON and log result
+      const rawText = await response.clone().text();
+      const json = JSON.parse(rawText || '{}');
+      return json;
     } else {
       return {}; // Return empty object for non-JSON responses
     }
@@ -99,13 +104,12 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 // Auth API
 export const authAPI = {
   login: async (email: string, password: string): Promise<LoginResponseDto> => {
-    const loginData: LoginUserDto = { email, password };
-
     try {
-      return await apiRequest("/auth/login", {
+      const response = await apiRequest("/auth/login", {
         method: "POST",
-        body: JSON.stringify(loginData),
+        body: JSON.stringify({ email, password }),
       });
+      return response;
     } catch (error) {
       // Development fallback when backend is not available
       console.warn("Backend not available, using mock authentication");
@@ -113,6 +117,8 @@ export const authAPI = {
         return {
           token: "mock-jwt-token-" + Date.now(),
           expiresIn: 86400000, // 24 hours
+          refreshToken: "mock-refresh-token-" + Date.now(),
+          refreshExpirationTime: new Date(Date.now() + 86400000).toISOString(),
         };
       }
       throw new Error(
@@ -123,10 +129,11 @@ export const authAPI = {
 
   register: async (userData: RegisterUserDto): Promise<RegisterResponseDTO> => {
     try {
-      return await apiRequest("/auth/signup", {
+      const response = await apiRequest("/auth/signup", {
         method: "POST",
         body: JSON.stringify(userData),
       });
+      return response;
     } catch (error) {
       // Development fallback when backend is not available
       console.warn("Backend not available, using mock registration");
@@ -189,7 +196,9 @@ export const registrationsAPI = {
       });
     } catch (error) {
       // Development fallback when backend is not available
-      console.warn("Backend not available, returning empty registrations array");
+      console.warn(
+        "Backend not available, returning empty registrations array",
+      );
       return [];
     }
   },
@@ -223,7 +232,8 @@ export const adminAPI = {
       lastName: string,
     ): Promise<User> => {
       return apiRequest(
-        `/admin-dashboard/users/name/${id}?firstName=${encodeURIComponent(firstName)
+        `/admin-dashboard/users/name/${id}?firstName=${
+          encodeURIComponent(firstName)
         }&lastName=${encodeURIComponent(lastName)}`,
         {
           method: "PUT",

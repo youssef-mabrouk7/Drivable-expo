@@ -25,6 +25,8 @@ export interface RegisterResponseDTO {
 export interface LoginResponseDto {
   token: string;
   expiresIn: number; // Token validity in milliseconds
+  refreshToken: string;
+  refreshExpirationTime: string;
 }
 
 // Backend Models

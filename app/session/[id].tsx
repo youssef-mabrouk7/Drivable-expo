@@ -20,6 +20,7 @@ import {
   CheckCircle 
 } from "lucide-react-native";
 import { useSessionStore } from "@/store/SessionStore";
+import { useRegistrationStore } from "@/store/RegistrationStore";
 import { sessionsAPI } from "@/services/api";
 import { Button } from "@/components/Button";
 import { Session } from "@/types";
@@ -31,11 +32,14 @@ export default function SessionDetailScreen() {
   const id = params.id as string;
   
   const { sessions } = useSessionStore();
+  const { registrations, cancelRegistration, fetchUserRegistrations, isLoading: isRegLoading } = useRegistrationStore();
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
+    fetchUserRegistrations();
     // First try to find the session in the store
     const foundSession = sessions.find(s => s.id === id);
     if (foundSession) {
@@ -92,6 +96,35 @@ export default function SessionDetailScreen() {
       );
     } finally {
       setIsRegistering(false);
+    }
+  };
+
+  // Check if user is registered for this session
+  const registration = registrations.find(r => r.session_id === id);
+  const isRegistered = !!registration;
+
+  const handleCancelRegistration = async () => {
+    if (!registration) return;
+    setIsCancelling(true);
+    try {
+      await cancelRegistration(registration.id);
+      Alert.alert(
+        "Registration Cancelled",
+        "Your registration for this session has been cancelled.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.replace("/tabs/sessions")
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert(
+        "Cancellation Failed",
+        error instanceof Error ? error.message : "Failed to cancel registration. Please try again."
+      );
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -284,16 +317,27 @@ export default function SessionDetailScreen() {
         )}
       </ScrollView>
 
-      {/* Register Button */}
+      {/* Register or Cancel Button */}
       <View style={styles.footer}>
-        <Button
-          title="Register for Session"
-          variant="primary"
-          size="large"
-          loading={isRegistering}
-          onPress={handleRegister}
-          icon={<CheckCircle size={20} color="white" />}
-        />
+        {isRegistered ? (
+          <Button
+            title="Cancel Registration"
+            variant="danger"
+            size="large"
+            loading={isCancelling}
+            onPress={handleCancelRegistration}
+            icon={<CheckCircle size={20} color="white" />}
+          />
+        ) : (
+          <Button
+            title="Register for Session"
+            variant="primary"
+            size="large"
+            loading={isRegistering}
+            onPress={handleRegister}
+            icon={<CheckCircle size={20} color="white" />}
+          />
+        )}
       </View>
     </SafeAreaView>
   );

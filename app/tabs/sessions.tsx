@@ -156,18 +156,23 @@ export default function SessionsScreen() {
 
     return sortedRegistrations.map((registration) => {
       const status = getStatusDisplay(registration);
-      
       return (
         <View key={registration.id} style={styles.sessionContainer}>
           <View style={styles.statusContainer}>
-            <View style={[styles.statusBadge, { backgroundColor: status.backgroundColor }]}>
+            <View style={[styles.statusBadge, { backgroundColor: status.backgroundColor }]}> 
               {status.icon}
-              <Text style={[styles.statusText, { color: status.textColor }]}>
+              <Text style={[styles.statusText, { color: status.textColor }]}> 
                 {status.text}
               </Text>
             </View>
           </View>
-          <SessionCard session={registration.session!} />
+          <SessionCard 
+            session={registration.session!} 
+            registration={registration}
+            onCancel={async (registrationId) => {
+              await fetchUserRegistrations(); // Refresh after cancel
+            }}
+          />
         </View>
       );
     });

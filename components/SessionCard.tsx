@@ -2,28 +2,36 @@ import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { Calendar, Clock, MapPin, Car } from "lucide-react-native";
-import { Session } from "@/types";
+import { Session, Registration } from "@/types";
 import { colors } from "@/constants/colors";
 
 interface SessionCardProps {
   session: Session;
+  registration?: Registration;
+  onCancel?: (registrationId: string) => void;
 }
 
-export function SessionCard({ session }: SessionCardProps) {
+export function SessionCard({ session, registration, onCancel }: SessionCardProps) {
   const router = useRouter();
-  const sessionDate = new Date(session.datetime);
-
-  const formattedDate = sessionDate.toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-
-  const formattedTime = sessionDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  let sessionDate: Date | null = null;
+  let formattedDate = "TBD";
+  let formattedTime = "TBD";
+  if (session.datetime) {
+    const d = new Date(session.datetime);
+    if (!isNaN(d.getTime())) {
+      sessionDate = d;
+      formattedDate = d.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+      formattedTime = d.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -101,6 +109,15 @@ export function SessionCard({ session }: SessionCardProps) {
           <Text style={styles.scenarioId}>
             Scenario #{session.scenario.scenarioID}
           </Text>
+        )}
+
+        {registration && onCancel && sessionDate && sessionDate > new Date() && (
+          <TouchableOpacity
+            style={{ marginTop: 8, backgroundColor: colors.error, padding: 10, borderRadius: 8 }}
+            onPress={() => onCancel(registration.id)}
+          >
+            <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>Cancel Registration</Text>
+          </TouchableOpacity>
         )}
       </View>
     </TouchableOpacity>

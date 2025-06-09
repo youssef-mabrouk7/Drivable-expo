@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User, RegisterUserDto, LoginResponseDto } from "@/types";
+import { LoginResponseDto, RegisterUserDto, User } from "@/types";
 import { authAPI } from "@/services/api";
 
 interface UserState {
@@ -31,7 +31,16 @@ export const useUserStore = create<UserState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response: LoginResponseDto = await authAPI.login(email, password);
+          const response: LoginResponseDto = await authAPI.login(
+            email,
+            password,
+          );
+          console.log(response);
+
+          // Validate that we received a token before storing it
+          if (!response || !response.token) {
+            throw new Error("Invalid login response: No token received");
+          }
 
           // Store the token
           await AsyncStorage.setItem("auth_token", response.token);
@@ -78,6 +87,11 @@ export const useUserStore = create<UserState>()(
         try {
           const response = await authAPI.register(userData);
 
+          // Validate that we received a token before storing it
+          if (!response || !response.token) {
+            throw new Error("Invalid registration response: No token received");
+          }
+
           // Store the token
           await AsyncStorage.setItem("auth_token", response.token);
 
@@ -95,7 +109,9 @@ export const useUserStore = create<UserState>()(
         } catch (error) {
           console.error("Registration error:", error);
           set({
-            error: error instanceof Error ? error.message : "Registration failed",
+            error: error instanceof Error
+              ? error.message
+              : "Registration failed",
             isLoading: false,
           });
           throw error;
@@ -129,10 +145,9 @@ export const useUserStore = create<UserState>()(
               ? {
                 ...state.user,
                 ...userData,
-                fullName:
-                  userData.firstName && userData.lastName
-                    ? `${userData.firstName} ${userData.lastName}`
-                    : state.user.fullName,
+                fullName: userData.firstName && userData.lastName
+                  ? `${userData.firstName} ${userData.lastName}`
+                  : state.user.fullName,
               }
               : null,
             isLoading: false,
@@ -181,12 +196,12 @@ export const useUserStore = create<UserState>()(
       checkAuthStatus: async () => {
         set({ isLoading: true });
         try {
-          const token = await AsyncStorage.getItem('auth_token');
+          const token = await AsyncStorage.getItem("auth_token");
           if (token) {
             console.log("Found token:", token); // Debug log
-            
+
             // For mock tokens, verify differently than real tokens
-            if (token.startsWith('mock-jwt-token')) {
+            if (token.startsWith("mock-jwt-token")) {
               console.log("Using mock authentication");
               // Use mock user data for development
               const userData = {
@@ -197,7 +212,7 @@ export const useUserStore = create<UserState>()(
                 created_at: new Date().toISOString(),
                 fullName: "Test User",
               };
-              
+
               set({
                 user: userData,
                 isAuthenticated: true,
@@ -224,7 +239,7 @@ export const useUserStore = create<UserState>()(
         } catch (error) {
           console.error("Auth check error:", error);
           // Token might be expired, clear it
-          await AsyncStorage.removeItem('auth_token');
+          await AsyncStorage.removeItem("auth_token");
           set({ user: null, isAuthenticated: false, isLoading: false });
           return false;
         }
