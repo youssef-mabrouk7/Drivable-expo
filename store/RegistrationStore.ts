@@ -57,6 +57,7 @@ export const useRegistrationStore = create<RegistrationState>()(
           set({
             error: errorMessage,
             isLoading: false,
+            registrations: [], // Ensure registrations is always an array on error
           });
 
           // If it's an authentication error, don't retry automatically
@@ -87,7 +88,7 @@ export const useRegistrationStore = create<RegistrationState>()(
 
           // Remove the cancelled registration from local state
           set((state) => ({
-            registrations: state.registrations.filter(
+            registrations: (state.registrations || []).filter(
               (registration) => registration.id !== id,
             ),
             isLoading: false,
@@ -106,7 +107,7 @@ export const useRegistrationStore = create<RegistrationState>()(
 
       addRegistration: (registration: Registration) => {
         set((state) => ({
-          registrations: [...state.registrations, registration],
+          registrations: [...(state.registrations || []), registration],
         }));
       },
 
@@ -117,6 +118,9 @@ export const useRegistrationStore = create<RegistrationState>()(
     {
       name: "registration-storage",
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        registrations: state.registrations || [],
+      }),
     },
   ),
 );

@@ -56,7 +56,7 @@ export interface User {
 
 export interface Session {
   id: string;
-  datetime: string; // ISO date string
+  date: string; // ISO date string
   duration_minutes: number;
   max_capacity: number;
   price: number;
@@ -71,16 +71,21 @@ export interface Session {
 }
 
 export interface Registration {
-  id: string;
-  user_id: string;
-  session_id: string;
-  payment_status: string;
+  id: string | number; // Allow both string and number IDs
+  user_id?: string;
+  session_id?: string;
+  payment_status?: string;
   score?: number;
   payment_id?: string;
-  created_at: string;
+  created_at?: string;
   // Include session details when populated
   session?: Session;
   user?: User;
+  // Additional fields from server response
+  feedback?: string;
+  transmissionType?: string;
+  completed?: boolean;
+  paid?: boolean;
 }
 
 // Legacy types for backward compatibility

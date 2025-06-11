@@ -1,8 +1,14 @@
-import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
+import React, { useEffect } from "react";
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { Calendar, Clock, MapPin, Car } from "lucide-react-native";
-import { Session, Registration } from "@/types";
+import { Calendar, Car, Clock, MapPin } from "lucide-react-native";
+import { Registration, Session } from "@/types";
 import { colors } from "@/constants/colors";
 
 interface SessionCardProps {
@@ -11,13 +17,15 @@ interface SessionCardProps {
   onCancel?: (registrationId: string) => void;
 }
 
-export function SessionCard({ session, registration, onCancel }: SessionCardProps) {
+export function SessionCard(
+  { session, registration, onCancel }: SessionCardProps,
+) {
   const router = useRouter();
   let sessionDate: Date | null = null;
   let formattedDate = "TBD";
   let formattedTime = "TBD";
-  if (session.datetime) {
-    const d = new Date(session.datetime);
+  if (session.date) {
+    const d = new Date(session.date);
     if (!isNaN(d.getTime())) {
       sessionDate = d;
       formattedDate = d.toLocaleDateString("en-US", {
@@ -54,18 +62,21 @@ export function SessionCard({ session, registration, onCancel }: SessionCardProp
   };
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.container}
       onPress={handlePress}
       activeOpacity={0.7}
     >
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Text style={styles.scenarioName}>{session.scenario?.name || 'Driving Session'}</Text>
+          <Text style={styles.scenarioName}>
+            {session.scenario?.name || "Driving Session"}
+          </Text>
           {session.scenario && (
             <View
               style={[styles.difficultyBadge, {
-                backgroundColor: getDifficultyColor(session.scenario.difficulty) + "20",
+                backgroundColor:
+                  getDifficultyColor(session.scenario.difficulty) + "20",
               }]}
             >
               <Text
@@ -93,7 +104,9 @@ export function SessionCard({ session, registration, onCancel }: SessionCardProp
 
         <View style={styles.infoRow}>
           <MapPin size={16} color={colors.primary} />
-          <Text style={styles.infoText}>{session.location || 'Location TBD'}</Text>
+          <Text style={styles.infoText}>
+            {session.location || "Location TBD"}
+          </Text>
         </View>
 
         {session.scenario && (
@@ -111,14 +124,28 @@ export function SessionCard({ session, registration, onCancel }: SessionCardProp
           </Text>
         )}
 
-        {registration && onCancel && sessionDate && sessionDate > new Date() && (
-          <TouchableOpacity
-            style={{ marginTop: 8, backgroundColor: colors.error, padding: 10, borderRadius: 8 }}
-            onPress={() => onCancel(registration.id)}
-          >
-            <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>Cancel Registration</Text>
-          </TouchableOpacity>
-        )}
+        {registration && onCancel && sessionDate && sessionDate > new Date() &&
+          (
+            <TouchableOpacity
+              style={{
+                marginTop: 8,
+                backgroundColor: colors.error,
+                padding: 10,
+                borderRadius: 8,
+              }}
+              onPress={() => onCancel(registration.id)}
+            >
+              <Text
+                style={{
+                  color: "white",
+                  textAlign: "center",
+                  fontWeight: "600",
+                }}
+              >
+                Cancel Registration
+              </Text>
+            </TouchableOpacity>
+          )}
       </View>
     </TouchableOpacity>
   );
@@ -195,4 +222,3 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
-

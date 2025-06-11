@@ -68,7 +68,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-          `HTTP ${response.status}: ${response.statusText}`,
+            `HTTP ${response.status}: ${response.statusText}`,
         );
       } catch {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -233,7 +233,8 @@ export const adminAPI = {
       lastName: string,
     ): Promise<User> => {
       return apiRequest(
-        `/admin-dashboard/users/name/${id}?firstName=${encodeURIComponent(firstName)
+        `/admin-dashboard/users/name/${id}?firstName=${
+          encodeURIComponent(firstName)
         }&lastName=${encodeURIComponent(lastName)}`,
         {
           method: "PUT",
