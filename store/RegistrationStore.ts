@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Registration } from "@/types";
-import { registrationsAPI, sessionsAPI } from "@/services/api";
+import { registrationsAPI } from "@/services/api";
 
 interface RegistrationState {
   registrations: Registration[];
@@ -29,25 +29,13 @@ export const useRegistrationStore = create<RegistrationState>()(
         try {
           const registrations = await registrationsAPI.getUserRegistrations();
           
-          // Fetch session data for each registration
-          const registrationsWithSessions = await Promise.all(
-            registrations.map(async (registration) => {
-              try {
-                const session = await sessionsAPI.getSessionById(registration.session_id);
-                return { ...registration, session };
-              } catch (error) {
-                console.error(`Error fetching session ${registration.session_id}:`, error);
-                return registration; // Return registration without session data if fetch fails
-              }
-            })
-          );
-
+          // Don't try to fetch session data separately since it's already included in the response
           set({
-            registrations: registrationsWithSessions,
+            registrations: registrations,
             isLoading: false,
           });
 
-          return registrationsWithSessions;
+          return registrations;
         } catch (error) {
           console.error("Error fetching user registrations:", error);
           const errorMessage = error instanceof Error

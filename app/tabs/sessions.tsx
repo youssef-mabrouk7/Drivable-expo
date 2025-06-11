@@ -13,6 +13,7 @@ import { SessionCard } from "@/components/SessionCard";
 import { EmptyState } from "@/components/EmptyState";
 import { colors } from "@/constants/colors";
 import { Calendar } from "lucide-react-native";
+import { registrationsAPI } from "@/services/api";
 
 export default function SessionsScreen() {
   const {
@@ -37,6 +38,7 @@ export default function SessionsScreen() {
   };
 
   const handleCancelRegistration = async (registrationId: string) => {
+    await registrationsAPI.cancelRegistration(registrationId);
     Alert.alert(
       "Cancel Registration",
       "Are you sure you want to cancel this registration?",
@@ -54,7 +56,7 @@ export default function SessionsScreen() {
               Alert.alert(
                 "Success",
                 "Registration cancelled successfully",
-                [{ text: "OK" }]
+                [{ text: "OK" }],
               );
             } catch (error) {
               Alert.alert(
@@ -62,35 +64,17 @@ export default function SessionsScreen() {
                 error instanceof Error
                   ? error.message
                   : "Failed to cancel registration. Please try again.",
-                [{ text: "OK" }]
+                [{ text: "OK" }],
               );
             }
           },
         },
-      ]
+      ],
     );
   };
 
-  // Convert server response to expected format and ensure it's an array
-  const registrationsList = Array.isArray(registrations)
-    ? registrations.map((reg) => ({
-        ...reg,
-        id: String(reg.id), // Convert number id to string
-        session: reg.session
-          ? {
-              ...reg.session,
-              id: String(reg.session.id),
-              date: reg.session.date, // Keep the ISO date string
-              datetime: reg.session.date, // Add datetime alias for compatibility
-              duration_minutes: 60, // Default duration
-              max_capacity: 10, // Default capacity
-              price: 0, // Default price
-              instructor: "TBD", // Default instructor
-              created_at: new Date().toISOString(), // Default created_at
-            }
-          : undefined,
-      }))
-    : [];
+  // Use registrations directly since server response already has correct structure
+  const registrationsList = Array.isArray(registrations) ? registrations : [];
 
   if (error) {
     return (
@@ -119,39 +103,42 @@ export default function SessionsScreen() {
           </Text>
         </View>
 
-        {registrationsList.length === 0 ? (
-          <EmptyState
-            icon={<Calendar size={48} color={colors.textSecondary} />}
-            title="No Sessions Yet"
-            description="You haven't registered for any sessions yet. Browse available sessions to get started!"
-          />
-        ) : (
-          <View style={styles.sessionsContainer}>
-            {registrationsList.map((registration) => (
-              <View key={registration.id} style={styles.sessionWrapper}>
-                <SessionCard
-                  session={registration.session!}
-                  registration={registration}
-                  onCancel={handleCancelRegistration}
-                />
-                {/* Add registration status info */}
-                <View style={styles.statusContainer}>
-                  <Text style={styles.statusText}>
-                    Status: {registration.completed ? "Completed" : "Upcoming"}
-                  </Text>
-                  <Text style={styles.statusText}>
-                    Payment: {registration.paid ? "Paid" : "Pending"}
-                  </Text>
-                  {registration.score && registration.score > 0 && (
+        {registrationsList.length === 0
+          ? (
+            <EmptyState
+              icon={<Calendar size={48} color={colors.textSecondary} />}
+              title="No Sessions Yet"
+              description="You haven't registered for any sessions yet. Browse available sessions to get started!"
+            />
+          )
+          : (
+            <View style={styles.sessionsContainer}>
+              {registrationsList.map((registration) => (
+                <View key={registration.id} style={styles.sessionWrapper}>
+                  <SessionCard
+                    session={registration.session!}
+                    registration={registration}
+                    onCancel={handleCancelRegistration}
+                  />
+                  {/* Add registration status info */}
+                  <View style={styles.statusContainer}>
                     <Text style={styles.statusText}>
-                      Score: {registration.score}
+                      Status:{" "}
+                      {registration.completed ? "Completed" : "Upcoming"}
                     </Text>
-                  )}
+                    <Text style={styles.statusText}>
+                      Payment: {registration.paid ? "Paid" : "Pending"}
+                    </Text>
+                    {registration.score && registration.score > 0 && (
+                      <Text style={styles.statusText}>
+                        Score: {registration.score}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
-            ))}
-          </View>
-        )}
+              ))}
+            </View>
+          )}
       </ScrollView>
     </SafeAreaView>
   );
