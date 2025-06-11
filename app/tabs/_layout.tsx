@@ -1,6 +1,12 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { BarChart, Calendar, Home, User } from "lucide-react-native";
+import {
+  BarChart,
+  Calendar,
+  ClipboardList,
+  Home,
+  User,
+} from "lucide-react-native";
 import { colors } from "@/constants/colors";
 import { Platform, StyleSheet } from "react-native";
 
@@ -66,4 +72,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-

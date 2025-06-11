@@ -13,7 +13,7 @@ import {
 } from "@/types";
 
 // Base API URL - Update this to match your backend
-const API_URL = "http://192.168.1.23:8080/api/v1";
+const API_URL = "http://192.168.1.50:8080/api/v1";
 
 // Helper to get auth token
 const getToken = async () => {
@@ -27,7 +27,8 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 
   try {
     // Do not include Authorization header for login or registration
-    const isAuthEndpoint = endpoint === "/auth/login" || endpoint === "/auth/signup";
+    const isAuthEndpoint = endpoint === "/auth/login" ||
+      endpoint === "/auth/signup";
     const token = isAuthEndpoint ? null : await getToken();
 
     const headers = {
@@ -67,7 +68,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-            `HTTP ${response.status}: ${response.statusText}`,
+          `HTTP ${response.status}: ${response.statusText}`,
         );
       } catch {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -79,7 +80,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
     if (contentType && contentType.includes("application/json")) {
       // Parse JSON and log result
       const rawText = await response.clone().text();
-      const json = JSON.parse(rawText || '{}');
+      const json = JSON.parse(rawText || "{}");
       return json;
     } else {
       return {}; // Return empty object for non-JSON responses
@@ -232,8 +233,7 @@ export const adminAPI = {
       lastName: string,
     ): Promise<User> => {
       return apiRequest(
-        `/admin-dashboard/users/name/${id}?firstName=${
-          encodeURIComponent(firstName)
+        `/admin-dashboard/users/name/${id}?firstName=${encodeURIComponent(firstName)
         }&lastName=${encodeURIComponent(lastName)}`,
         {
           method: "PUT",

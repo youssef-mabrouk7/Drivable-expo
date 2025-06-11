@@ -10,7 +10,7 @@ interface RegistrationState {
   error: string | null;
 
   // Actions
-  fetchUserRegistrations: () => Promise<void>;
+  fetchUserRegistrations: () => Promise<Registration[]>;
   getRegistrationById: (id: string) => Promise<Registration | null>;
   cancelRegistration: (id: string) => Promise<void>;
   addRegistration: (registration: Registration) => void;
@@ -24,15 +24,30 @@ export const useRegistrationStore = create<RegistrationState>()(
       isLoading: false,
       error: null,
 
-      fetchUserRegistrations: async () => {
+      fetchUserRegistrations: async (): Promise<Registration[]> => {
         set({ isLoading: true, error: null });
         try {
           const registrations = await registrationsAPI.getUserRegistrations();
+          
+          // Fetch session data for each registration
+          const registrationsWithSessions = await Promise.all(
+            registrations.map(async (registration) => {
+              try {
+                const session = await sessionsAPI.getSessionById(registration.session_id);
+                return { ...registration, session };
+              } catch (error) {
+                console.error(`Error fetching session ${registration.session_id}:`, error);
+                return registration; // Return registration without session data if fetch fails
+              }
+            })
+          );
 
           set({
-            registrations: registrations,
+            registrations: registrationsWithSessions,
             isLoading: false,
           });
+
+          return registrationsWithSessions;
         } catch (error) {
           console.error("Error fetching user registrations:", error);
           const errorMessage = error instanceof Error
@@ -51,6 +66,8 @@ export const useRegistrationStore = create<RegistrationState>()(
           ) {
             throw error; // Let the component handle the auth error
           }
+
+          return []; // Return empty array on error
         }
       },
 
@@ -103,4 +120,3 @@ export const useRegistrationStore = create<RegistrationState>()(
     },
   ),
 );
-

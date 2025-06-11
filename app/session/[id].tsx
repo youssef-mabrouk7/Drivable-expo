@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   View,
-  Alert,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Car, 
-  User, 
+import {
+  Calendar,
+  Car,
+  CheckCircle,
+  Clock,
   DollarSign,
   Info,
-  CheckCircle 
+  MapPin,
+  User,
 } from "lucide-react-native";
 import { useSessionStore } from "@/store/SessionStore";
-import { useRegistrationStore } from "@/store/RegistrationStore";
 import { sessionsAPI } from "@/services/api";
 import { Button } from "@/components/Button";
 import { Session } from "@/types";
@@ -30,42 +29,21 @@ export default function SessionDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = params.id as string;
-  
-  const { sessions } = useSessionStore();
-  const { registrations, cancelRegistration, fetchUserRegistrations, isLoading: isRegLoading } = useRegistrationStore();
+
+  const { sessions, getSessionById } = useSessionStore();
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
-    fetchUserRegistrations();
-    // First try to find the session in the store
-    const foundSession = sessions.find(s => s.id === id);
-    if (foundSession) {
-      setSession(foundSession);
-    } else {
-      // If not found in store, fetch from API
-      fetchSessionDetails();
-    }
-  }, [id, sessions]);
-
-  const fetchSessionDetails = async () => {
     setIsLoading(true);
-    try {
-      const sessionData = await sessionsAPI.getSessionById(id);
-      setSession(sessionData);
-    } catch (error) {
-      console.error("Error fetching session details:", error);
-      Alert.alert(
-        "Error", 
-        "Failed to load session details. Please try again.",
-        [{ text: "OK", onPress: () => router.back() }]
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const session = getSessionById(id);
+    session?.then((data) => {
+      setSession(data);
+    });
+    setIsLoading(false);
+  }, [id]);
 
   const handleRegister = async () => {
     if (!session) return;
@@ -73,26 +51,28 @@ export default function SessionDetailScreen() {
     setIsRegistering(true);
     try {
       await sessionsAPI.registerForSession(session.id);
-      
+
       Alert.alert(
         "Registration Successful!",
         "You have been successfully registered for this session.",
         [
           {
             text: "View My Sessions",
-            onPress: () => router.replace("/tabs/sessions")
+            onPress: () => router.push("/(tabs)/sessions" as any),
           },
           {
             text: "OK",
-            style: "default"
-          }
-        ]
+            style: "default",
+          },
+        ],
       );
     } catch (error) {
       console.error("Registration error:", error);
       Alert.alert(
         "Registration Failed",
-        error instanceof Error ? error.message : "Failed to register for session. Please try again."
+        error instanceof Error
+          ? error.message
+          : "Failed to register for session. Please try again.",
       );
     } finally {
       setIsRegistering(false);
@@ -100,33 +80,6 @@ export default function SessionDetailScreen() {
   };
 
   // Check if user is registered for this session
-  const registration = registrations.find(r => r.session_id === id);
-  const isRegistered = !!registration;
-
-  const handleCancelRegistration = async () => {
-    if (!registration) return;
-    setIsCancelling(true);
-    try {
-      await cancelRegistration(registration.id);
-      Alert.alert(
-        "Registration Cancelled",
-        "Your registration for this session has been cancelled.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/tabs/sessions")
-          }
-        ]
-      );
-    } catch (error) {
-      Alert.alert(
-        "Cancellation Failed",
-        error instanceof Error ? error.message : "Failed to cancel registration. Please try again."
-      );
-    } finally {
-      setIsCancelling(false);
-    }
-  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -178,13 +131,13 @@ export default function SessionDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
-      <Stack.Screen 
-        options={{ 
-          title: session.scenario?.name || "Session Details" 
-        }} 
+      <Stack.Screen
+        options={{
+          title: session.scenario?.name || "Session Details",
+        }}
       />
-      
-      <ScrollView 
+
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -197,7 +150,8 @@ export default function SessionDetailScreen() {
           {session.scenario && (
             <View
               style={[styles.difficultyBadge, {
-                backgroundColor: getDifficultyColor(session.scenario.difficulty) + "20",
+                backgroundColor:
+                  getDifficultyColor(session.scenario.difficulty) + "20",
               }]}
             >
               <Text
@@ -214,7 +168,7 @@ export default function SessionDetailScreen() {
         {/* Session Details */}
         <View style={styles.detailsCard}>
           <Text style={styles.sectionTitle}>Session Details</Text>
-          
+
           <View style={styles.detailRow}>
             <Calendar size={20} color={colors.primary} />
             <View style={styles.detailContent}>
@@ -235,7 +189,9 @@ export default function SessionDetailScreen() {
             <MapPin size={20} color={colors.primary} />
             <View style={styles.detailContent}>
               <Text style={styles.detailLabel}>Location</Text>
-              <Text style={styles.detailValue}>{session.location || "Location TBD"}</Text>
+              <Text style={styles.detailValue}>
+                {session.location || "Location TBD"}
+              </Text>
             </View>
           </View>
 
@@ -251,7 +207,9 @@ export default function SessionDetailScreen() {
             <Clock size={20} color={colors.primary} />
             <View style={styles.detailContent}>
               <Text style={styles.detailLabel}>Duration</Text>
-              <Text style={styles.detailValue}>{session.duration_minutes} minutes</Text>
+              <Text style={styles.detailValue}>
+                {session.duration_minutes} minutes
+              </Text>
             </View>
           </View>
 
@@ -270,12 +228,14 @@ export default function SessionDetailScreen() {
         {session.scenario && (
           <View style={styles.detailsCard}>
             <Text style={styles.sectionTitle}>Scenario Information</Text>
-            
+
             <View style={styles.detailRow}>
               <Car size={20} color={colors.primary} />
               <View style={styles.detailContent}>
                 <Text style={styles.detailLabel}>Environment</Text>
-                <Text style={styles.detailValue}>{session.scenario.environmentType}</Text>
+                <Text style={styles.detailValue}>
+                  {session.scenario.environmentType}
+                </Text>
               </View>
             </View>
 
@@ -283,7 +243,9 @@ export default function SessionDetailScreen() {
               <Info size={20} color={colors.primary} />
               <View style={styles.detailContent}>
                 <Text style={styles.detailLabel}>Scenario ID</Text>
-                <Text style={styles.detailValue}>#{session.scenario.scenarioID}</Text>
+                <Text style={styles.detailValue}>
+                  #{session.scenario.scenarioID}
+                </Text>
               </View>
             </View>
           </View>
@@ -293,7 +255,7 @@ export default function SessionDetailScreen() {
         {(session.topic || session.notes) && (
           <View style={styles.detailsCard}>
             <Text style={styles.sectionTitle}>Additional Information</Text>
-            
+
             {session.topic && (
               <View style={styles.detailRow}>
                 <Info size={20} color={colors.primary} />
@@ -319,25 +281,14 @@ export default function SessionDetailScreen() {
 
       {/* Register or Cancel Button */}
       <View style={styles.footer}>
-        {isRegistered ? (
-          <Button
-            title="Cancel Registration"
-            variant="danger"
-            size="large"
-            loading={isCancelling}
-            onPress={handleCancelRegistration}
-            icon={<CheckCircle size={20} color="white" />}
-          />
-        ) : (
-          <Button
-            title="Register for Session"
-            variant="primary"
-            size="large"
-            loading={isRegistering}
-            onPress={handleRegister}
-            icon={<CheckCircle size={20} color="white" />}
-          />
-        )}
+        <Button
+          title="Register for Session"
+          variant="primary"
+          size="large"
+          loading={isRegistering}
+          onPress={handleRegister}
+          icon={<CheckCircle size={20} color="white" />}
+        />
       </View>
     </SafeAreaView>
   );
@@ -492,3 +443,4 @@ const styles = StyleSheet.create({
     }),
   },
 });
+
