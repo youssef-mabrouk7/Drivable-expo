@@ -13,7 +13,7 @@ import {
 } from "@/types";
 
 // Base API URL - Update this to match your backend
-const API_URL = "http://192.168.1.50:8080/api/v1";
+const API_URL = process.env.API_URL || "http://192.168.1.101:8080/api/v1";
 
 // Helper to get auth token
 const getToken = async () => {
@@ -68,7 +68,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-            `HTTP ${response.status}: ${response.statusText}`,
+          `HTTP ${response.status}: ${response.statusText}`,
         );
       } catch {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -233,8 +233,7 @@ export const adminAPI = {
       lastName: string,
     ): Promise<User> => {
       return apiRequest(
-        `/admin-dashboard/users/name/${id}?firstName=${
-          encodeURIComponent(firstName)
+        `/admin-dashboard/users/name/${id}?firstName=${encodeURIComponent(firstName)
         }&lastName=${encodeURIComponent(lastName)}`,
         {
           method: "PUT",
@@ -331,7 +330,7 @@ const sessionToLesson = (session: Session): Lesson => {
       environmentType: "Urban",
       difficulty: "EASY",
     },
-    date: new Date(session.datetime),
+    date: new Date(session.date),
     duration: session.duration_minutes,
     status: session.status || "scheduled",
     topic: session.topic || "General Driving",

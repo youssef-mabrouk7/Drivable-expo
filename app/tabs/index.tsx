@@ -10,7 +10,7 @@ import {
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Calendar, Plus, Search, MapPin, Clock } from "lucide-react-native";
+import { Calendar, Clock, MapPin, Plus, Search } from "lucide-react-native";
 import { useSessionStore } from "@/store/SessionStore";
 import { useUserStore } from "@/store/userStore";
 import { SessionCard } from "@/components/SessionCard";
@@ -40,18 +40,7 @@ export default function HomeScreen() {
   };
 
   // Filter sessions based on search query
-  const filteredSessions = sessions.filter((session) => {
-    if (!searchQuery.trim()) return true;
-
-    const query = searchQuery.toLowerCase();
-    return (
-      session.scenario?.name.toLowerCase().includes(query) ||
-      session.location?.toLowerCase().includes(query) ||
-      session.topic?.toLowerCase().includes(query) ||
-      session.instructor.toLowerCase().includes(query)
-    );
-  });
-
+  const filteredSessions = sessions;
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
@@ -109,29 +98,33 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading available sessions...</Text>
-          </View>
-        ) : filteredSessions.length > 0 ? (
-          filteredSessions.map((session) => (
-            <SessionCard key={session.id} session={session} />
-          ))
-        ) : (
-          <EmptyState
-            title={
-              searchQuery ? "No sessions found" : "No sessions available"
-            }
-            description={
-              searchQuery
-                ? "Try adjusting your search terms to find sessions."
-                : "No driving sessions are currently available. Check back later for new sessions."
-            }
-            icon={<Calendar size={48} color={colors.textSecondary} />}
-            actionLabel="Book a Session"
-            onAction={handleBookLesson}
-          />
-        )}
+        {isLoading
+          ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>
+                Loading available sessions...
+              </Text>
+            </View>
+          )
+          : filteredSessions.length > 0
+            ? (
+              filteredSessions.map((session) => (
+                <SessionCard key={session.id} session={session} />
+              ))
+            )
+            : (
+              <EmptyState
+                title={searchQuery
+                  ? "No sessions found"
+                  : "No sessions available"}
+                description={searchQuery
+                  ? "Try adjusting your search terms to find sessions."
+                  : "No driving sessions are currently available. Check back later for new sessions."}
+                icon={<Calendar size={48} color={colors.textSecondary} />}
+                actionLabel="Book a Session"
+                onAction={handleBookLesson}
+              />
+            )}
       </ScrollView>
 
       {/* Floating action button */}
@@ -278,4 +271,3 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
 });
-
