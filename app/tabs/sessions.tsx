@@ -123,15 +123,17 @@ export default function SessionsScreen() {
                   {/* Add registration status info */}
                   <View style={styles.statusContainer}>
                     <Text style={styles.statusText}>
-                      Status:{" "}
-                      {registration.completed ? "Completed" : "Upcoming"}
+                      <Text>Status: </Text>
+                      <Text>{registration.completed ? "Completed" : "Upcoming"}</Text>
                     </Text>
                     <Text style={styles.statusText}>
-                      Payment: {registration.paid ? "Paid" : "Pending"}
+                      <Text>Payment: </Text>
+                      <Text>{registration.paid ? "Paid" : "Pending"}</Text>
                     </Text>
                     {registration.score && registration.score > 0 && (
                       <Text style={styles.statusText}>
-                        Score: {registration.score}
+                        <Text>Score: </Text>
+                        <Text>{registration.score}</Text>
                       </Text>
                     )}
                   </View>

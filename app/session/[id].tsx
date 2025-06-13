@@ -116,7 +116,7 @@ export default function SessionDetailScreen() {
     );
   }
 
-  const sessionDate = new Date(session.datetime);
+  const sessionDate = new Date(session.date);
   const formattedDate = sessionDate.toLocaleDateString("en-US", {
     weekday: "long",
     day: "numeric",
