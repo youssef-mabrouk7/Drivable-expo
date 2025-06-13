@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -22,9 +23,16 @@ export default function HomeScreen() {
   const { user } = useUserStore();
   const { sessions, fetchSessions, isLoading } = useSessionStore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchSessions();
+  }, [fetchSessions]);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await fetchSessions();
+    setRefreshing(false);
   }, [fetchSessions]);
 
   const handleBookLesson = () => {
@@ -47,6 +55,14 @@ export default function HomeScreen() {
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 112 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       >
         {/* Header with greeting */}
         <View style={styles.header}>
