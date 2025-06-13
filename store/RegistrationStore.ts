@@ -83,13 +83,33 @@ export const useRegistrationStore = create<RegistrationState>()(
           }));
         } catch (error) {
           console.error("Error cancelling registration:", error);
+          const errorMessage = error instanceof Error
+            ? error.message
+            : "Failed to cancel registration";
+
+          // If the registration is not found, we should still remove it from local state
+          if (errorMessage.toLowerCase().includes("not found") || errorMessage.includes("404")) {
+            set((state) => ({
+              registrations: (state.registrations || []).filter(
+                (registration) => registration.id !== id,
+              ),
+              isLoading: false,
+            }));
+            return;
+          }
+
           set({
-            error: error instanceof Error
-              ? error.message
-              : "Failed to cancel registration",
+            error: errorMessage,
             isLoading: false,
           });
-          throw error;
+
+          // If it's an authentication error, don't retry automatically
+          if (
+            errorMessage.includes("Authentication failed") ||
+            errorMessage.includes("403") || errorMessage.includes("401")
+          ) {
+            throw error; // Let the component handle the auth error
+          }
         }
       },
 
