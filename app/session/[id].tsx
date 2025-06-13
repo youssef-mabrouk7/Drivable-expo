@@ -196,14 +196,6 @@ export default function SessionDetailScreen() {
           </View>
 
           <View style={styles.detailRow}>
-            <User size={20} color={colors.primary} />
-            <View style={styles.detailContent}>
-              <Text style={styles.detailLabel}>Instructor</Text>
-              <Text style={styles.detailValue}>{session.instructor}</Text>
-            </View>
-          </View>
-
-          <View style={styles.detailRow}>
             <Clock size={20} color={colors.primary} />
             <View style={styles.detailContent}>
               <Text style={styles.detailLabel}>Duration</Text>

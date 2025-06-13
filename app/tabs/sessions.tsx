@@ -38,7 +38,6 @@ export default function SessionsScreen() {
   };
 
   const handleCancelRegistration = async (registrationId: string) => {
-    await registrationsAPI.cancelRegistration(registrationId);
     Alert.alert(
       "Cancel Registration",
       "Are you sure you want to cancel this registration?",
@@ -52,6 +51,7 @@ export default function SessionsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
+              await registrationsAPI.cancelRegistration(registrationId);
               await cancelRegistration(registrationId);
               Alert.alert(
                 "Success",
