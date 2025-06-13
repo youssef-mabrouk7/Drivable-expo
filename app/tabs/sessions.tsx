@@ -98,8 +98,8 @@ export default function SessionsScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>My Sessions</Text>
           <Text style={styles.subtitle}>
-            {registrationsList.length}{" "}
-            session{registrationsList.length !== 1 ? "s" : ""} registered
+            <Text>{registrationsList.length}</Text>
+            <Text>{" "}session{registrationsList.length !== 1 ? "s" : ""} registered</Text>
           </Text>
         </View>
 
