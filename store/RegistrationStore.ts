@@ -82,7 +82,6 @@ export const useRegistrationStore = create<RegistrationState>()(
             isLoading: false,
           }));
         } catch (error) {
-          console.error("Error cancelling registration:", error);
           const errorMessage = error instanceof Error
             ? error.message
             : "Failed to cancel registration";
