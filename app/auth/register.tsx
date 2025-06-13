@@ -53,7 +53,7 @@ export default function RegisterScreen() {
         handicapType: 0,
         transmissionType: 0, // Default to automatic
       });
-      router.replace("/tabs");
+      router.replace("/tabs/index");
     } catch (error) {
       return;
     }
