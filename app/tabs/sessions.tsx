@@ -33,7 +33,7 @@ export default function SessionsScreen() {
     try {
       await fetchUserRegistrations();
     } catch (error) {
-      console.error("Error refreshing registrations:", error);
+      // Error is already handled by the store
     }
   };
 
@@ -98,8 +98,7 @@ export default function SessionsScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>My Sessions</Text>
           <Text style={styles.subtitle}>
-            <Text>{registrationsList.length}</Text>
-            <Text>{" "}session{registrationsList.length !== 1 ? "s" : ""} registered</Text>
+            {registrationsList.length} session{registrationsList.length !== 1 ? "s" : ""} registered
           </Text>
         </View>
 
