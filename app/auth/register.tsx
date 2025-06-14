@@ -16,14 +16,12 @@ import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react-native";
 import { useUserStore } from "@/store/userStore";
 import { colors } from "@/constants/colors";
 import { Button } from "@/components/Button";
+import { useThemeStore } from "@/store/themeStore";
 
 export default function RegisterScreen() {
-  useEffect(() => {
-    console.log("Register Screen rendered");
-  }, []);
-
   const router = useRouter();
   const { register, isLoading, error } = useUserStore();
+  const { isDarkMode } = useThemeStore();
   const [formError, setFormError] = useState("");
 
   const [formData, setFormData] = useState({
@@ -49,6 +47,7 @@ export default function RegisterScreen() {
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        phone: formData.phone,
         age: "30", // Default age
         handicapType: 0,
         transmissionType: 0, // Default to automatic
@@ -64,156 +63,144 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]}>
       <Stack.Screen
         options={{
           title: "Register",
-          headerShown: false,
+          headerStyle: {
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+          },
+          headerTintColor: isDarkMode ? colors.textDark : colors.text,
         }}
       />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidingView}
+        style={styles.keyboardAvoid}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.logoContainer}>
-            <Image
-              source={require("@/assets/images/playstore.png")}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.appName}>Driveable</Text>
+          <View style={styles.header}>
+            <Text style={[styles.title, isDarkMode && styles.darkText]}>Create Account</Text>
+            <Text style={[styles.subtitle, isDarkMode && styles.darkTextSecondary]}>
+              Sign up to get started
+            </Text>
           </View>
 
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>
-            Sign up to start your driving journey
-          </Text>
-
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
+          <View style={styles.form}>
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <User size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="First Name"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={formData.firstName}
+                onChangeText={(text) => setFormData({ ...formData, firstName: text })}
+                autoCapitalize="words"
+              />
             </View>
-          )}
-          {formError
-            ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{formError}</Text>
-              </View>
-            )
-            : null}
 
-          <View style={styles.inputContainer}>
-            <User size={20} color={colors.primary} />
-            <TextInput
-              style={styles.input}
-              placeholder="First Name"
-              placeholderTextColor={colors.primary}
-              value={formData.firstName}
-              onChangeText={(text) =>
-                setFormData({ ...formData, firstName: text })}
-              autoCapitalize="words"
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <User size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="Last Name"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={formData.lastName}
+                onChangeText={(text) => setFormData({ ...formData, lastName: text })}
+                autoCapitalize="words"
+              />
+            </View>
+
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <Mail size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="Email"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={formData.email}
+                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <Phone size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="Phone Number"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={formData.phone}
+                onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <Lock size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="Password"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={formData.password}
+                onChangeText={(text) => setFormData({ ...formData, password: text })}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+                ) : (
+                  <Eye size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <Lock size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="Confirm Password"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={formData.confirmPassword}
+                onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+                secureTextEntry={!showConfirmPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={styles.eyeIcon}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+                ) : (
+                  <Eye size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {(error || formError) && (
+              <Text style={styles.errorText}>{error || formError}</Text>
+            )}
+
+            <Button
+              onPress={handleRegister}
+              title="Sign Up"
+              loading={isLoading}
+              style={styles.button}
             />
-          </View>
 
-          <View style={styles.inputContainer}>
-            <User size={20} color={colors.primary} />
-            <TextInput
-              style={styles.input}
-              placeholder="Last Name"
-              placeholderTextColor={colors.primary}
-              value={formData.lastName}
-              onChangeText={(text) =>
-                setFormData({ ...formData, lastName: text })}
-              autoCapitalize="words"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Mail size={20} color={colors.primary} />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor={colors.primary}
-              value={formData.email}
-              onChangeText={(text) => setFormData({ ...formData, email: text })}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Phone size={20} color={colors.primary} />
-            <TextInput
-              style={styles.input}
-              placeholder="Phone Number"
-              placeholderTextColor={colors.primary}
-              value={formData.phone}
-              onChangeText={(text) => setFormData({ ...formData, phone: text })}
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Lock size={20} color={colors.primary} />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor={colors.primary}
-              value={formData.password}
-              onChangeText={(text) =>
-                setFormData({ ...formData, password: text })}
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              {showPassword
-                ? <EyeOff size={20} color={colors.primary} />
-                : <Eye size={20} color={colors.primary} />}
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Lock size={20} color={colors.primary} />
-            <TextInput
-              style={styles.input}
-              placeholder="Confirm Password"
-              placeholderTextColor={colors.primary}
-              value={formData.confirmPassword}
-              onChangeText={(text) =>
-                setFormData({ ...formData, confirmPassword: text })}
-              secureTextEntry={!showConfirmPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              style={styles.eyeIcon}
-            >
-              {showConfirmPassword
-                ? <EyeOff size={20} color={colors.primary} />
-                : <Eye size={20} color={colors.primary} />}
-            </TouchableOpacity>
-          </View>
-
-          <Button
-            title="Create Account"
-            variant="primary"
-            size="large"
-            loading={isLoading}
-            onPress={handleRegister}
-            style={styles.registerButton}
-          />
-
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account?</Text>
-            <TouchableOpacity onPress={handleLogin}>
-              <Text style={styles.loginLink}>Login</Text>
-            </TouchableOpacity>
+            <View style={styles.footer}>
+              <Text style={[styles.footerText, isDarkMode && styles.darkTextSecondary]}>
+                Already have an account?{" "}
+              </Text>
+              <TouchableOpacity onPress={handleLogin}>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -226,84 +213,86 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  keyboardAvoidingView: {
+  darkContainer: {
+    backgroundColor: colors.backgroundDark,
+  },
+  keyboardAvoid: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
-    justifyContent: "center",
+    padding: 16,
   },
-  logoContainer: {
-    alignItems: "center",
+  header: {
+    marginTop: 32,
     marginBottom: 32,
   },
-  logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 16,
-  },
-  appName: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: colors.text,
-  },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "700",
     color: colors.text,
     marginBottom: 8,
   },
+  darkText: {
+    color: colors.textDark,
+  },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: 24,
   },
-  errorContainer: {
-    backgroundColor: colors.error + "20",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+  darkTextSecondary: {
+    color: colors.textSecondaryDark,
   },
-  errorText: {
-    color: colors.error,
-    fontSize: 14,
+  form: {
+    gap: 16,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    height: 56,
+  },
+  darkInputContainer: {
+    backgroundColor: colors.cardDark,
+    borderColor: colors.borderDark,
   },
   input: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 8,
     fontSize: 16,
-    color: colors.primary,
+    color: colors.text,
+    paddingVertical: 12,
+  },
+  darkInput: {
+    color: colors.textDark,
   },
   eyeIcon: {
-    padding: 4,
+    padding: 8,
   },
-  registerButton: {
-    marginBottom: 24,
+  errorText: {
+    color: colors.error,
+    fontSize: 14,
+    marginTop: 4,
   },
-  loginContainer: {
+  button: {
+    marginTop: 8,
+  },
+  footer: {
     flexDirection: "row",
     justifyContent: "center",
+    marginTop: 24,
   },
-  loginText: {
+  footerText: {
+    fontSize: 14,
     color: colors.textSecondary,
-    fontSize: 14,
   },
-  loginLink: {
-    color: colors.primary,
+  footerLink: {
     fontSize: 14,
-    fontWeight: "500",
+    color: colors.primary,
+    fontWeight: "600",
   },
 });
 

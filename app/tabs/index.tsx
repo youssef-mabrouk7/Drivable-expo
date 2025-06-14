@@ -17,11 +17,13 @@ import { useUserStore } from "@/store/userStore";
 import { SessionCard } from "@/components/SessionCard";
 import { EmptyState } from "@/components/EmptyState";
 import { colors } from "@/constants/colors";
+import { useThemeStore } from "@/store/themeStore";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user } = useUserStore();
   const { sessions, fetchSessions, isLoading } = useSessionStore();
+  const { user } = useUserStore();
+  const { isDarkMode } = useThemeStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -35,22 +37,22 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [fetchSessions]);
 
-  const handleBookLesson = () => {
-    router.push("/booking/new");
+  const handleCreateSession = () => {
+    router.push("/(session)/create" as any);
   };
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      // You can implement search functionality here
-      // For now, we'll just filter the existing sessions
-      console.log("Searching for:", searchQuery);
-    }
-  };
+  const filteredSessions = sessions.filter((session) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      (session.scenario?.name || "").toLowerCase().includes(searchLower) ||
+      (session.topic || "").toLowerCase().includes(searchLower) ||
+      (session.location || "").toLowerCase().includes(searchLower) ||
+      (session.notes || "").toLowerCase().includes(searchLower)
+    );
+  });
 
-  // Filter sessions based on search query
-  const filteredSessions = sessions;
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]} edges={["top"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: 112 }]}
@@ -60,15 +62,15 @@ export default function HomeScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             colors={[colors.primary]}
-            tintColor={colors.primary}
+            tintColor={isDarkMode ? colors.textDark : colors.text}
           />
         }
       >
         {/* Header with greeting */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.name}>
+            <Text style={[styles.greeting, isDarkMode && styles.darkText]}>Welcome back,</Text>
+            <Text style={[styles.name, isDarkMode && styles.darkText]}>
               {user?.firstName?.split(" ")[0] || "Driver"}
             </Text>
           </View>
@@ -78,38 +80,36 @@ export default function HomeScreen() {
         </View>
 
         {/* Search bar */}
-        <View style={styles.searchContainer}>
+        <View style={[styles.searchContainer, isDarkMode && styles.darkSearchContainer]}>
+          <Search size={20} color={isDarkMode ? colors.textSecondaryDark : colors.textSecondary} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, isDarkMode && styles.darkSearchInput]}
             placeholder="Search sessions..."
+            placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
           />
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-            <Search size={20} color={colors.white} />
-          </TouchableOpacity>
         </View>
 
         {/* Available sessions section */}
         <View style={styles.eventsHeader}>
-          <Text style={styles.eventsTitle}>Available Sessions</Text>
-          <Text style={styles.eventsSubtitle}>
+          <Text style={[styles.eventsTitle, isDarkMode && styles.darkText]}>Available Sessions</Text>
+          <Text style={[styles.eventsSubtitle, isDarkMode && styles.darkText]}>
             {filteredSessions.length} session
             {filteredSessions.length !== 1 ? "s" : ""} available
           </Text>
         </View>
 
         <View style={styles.schoolInfo}>
-          <Text style={styles.schoolName}>Driving Sessions</Text>
+          <Text style={[styles.schoolName, isDarkMode && styles.darkText]}>Driving Sessions</Text>
           <View style={styles.schoolDetails}>
             <View style={styles.detailItem}>
               <MapPin size={16} color={colors.white} />
-              <Text style={styles.detailText}>Various Locations</Text>
+              <Text style={[styles.detailText, isDarkMode && styles.darkText]}>Various Locations</Text>
             </View>
             <View style={styles.detailItem}>
               <Clock size={16} color={colors.white} />
-              <Text style={styles.detailText}>Multiple Durations</Text>
+              <Text style={[styles.detailText, isDarkMode && styles.darkText]}>Multiple Durations</Text>
             </View>
           </View>
         </View>
@@ -117,7 +117,7 @@ export default function HomeScreen() {
         {isLoading
           ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>
+              <Text style={[styles.loadingText, isDarkMode && styles.darkText]}>
                 Loading available sessions...
               </Text>
             </View>
@@ -125,7 +125,10 @@ export default function HomeScreen() {
           : filteredSessions.length > 0
             ? (
               filteredSessions.map((session) => (
-                <SessionCard key={session.id} session={session} />
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                />
               ))
             )
             : (
@@ -138,7 +141,7 @@ export default function HomeScreen() {
                   : "No driving sessions are currently available. Check back later for new sessions."}
                 icon={<Calendar size={48} color={colors.textSecondary} />}
                 actionLabel="Book a Session"
-                onAction={handleBookLesson}
+                onAction={handleCreateSession}
               />
             )}
       </ScrollView>
@@ -146,7 +149,7 @@ export default function HomeScreen() {
       {/* Floating action button */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={handleBookLesson}
+        onPress={handleCreateSession}
       >
         <Plus size={24} color={colors.white} />
       </TouchableOpacity>
@@ -158,6 +161,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  darkContainer: {
+    backgroundColor: colors.backgroundDark,
   },
   scrollView: {
     flex: 1,
@@ -174,6 +180,9 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  darkText: {
+    color: colors.textDark,
   },
   name: {
     fontSize: 24,
@@ -195,28 +204,28 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: "row",
-    marginBottom: 20,
+    alignItems: "center",
+    backgroundColor: colors.card,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  darkSearchContainer: {
+    backgroundColor: colors.cardDark,
+    borderColor: colors.borderDark,
   },
   searchInput: {
     flex: 1,
-    height: 48,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    marginLeft: 8,
     fontSize: 16,
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
+    color: colors.text,
+    paddingVertical: 12,
   },
-  searchButton: {
-    width: 48,
-    height: 48,
-    backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
+  darkSearchInput: {
+    color: colors.textDark,
   },
   eventsHeader: {
     backgroundColor: colors.primary,

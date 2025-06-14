@@ -16,10 +16,12 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import { useUserStore } from "@/store/userStore";
 import { colors } from "@/constants/colors";
 import { Button } from "@/components/Button";
+import { useThemeStore } from "@/store/themeStore";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, isLoading, error } = useUserStore();
+  const { isDarkMode } = useThemeStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +30,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       await login(email, password);
-      router.replace("/tabs"); // Using the correct route format
+      router.replace("/tabs");
     } catch (error) {
       // Error is handled in the store
     }
@@ -39,87 +41,84 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]}>
       <Stack.Screen
         options={{
           title: "Login",
-          headerShown: false,
+          headerStyle: {
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+          },
+          headerTintColor: isDarkMode ? colors.textDark : colors.text,
         }}
       />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidingView}
+        style={styles.keyboardAvoid}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>Dr</Text>
+          <View style={styles.header}>
+            <Text style={[styles.title, isDarkMode && styles.darkText]}>Welcome Back</Text>
+            <Text style={[styles.subtitle, isDarkMode && styles.darkTextSecondary]}>
+              Sign in to continue
+            </Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <Mail size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="Email"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
             </View>
-            <Text style={styles.appName}>DrivingLessons</Text>
-          </View>
 
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
-
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={[styles.inputContainer, isDarkMode && styles.darkInputContainer]}>
+              <Lock size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+              <TextInput
+                style={[styles.input, isDarkMode && styles.darkInput]}
+                placeholder="Password"
+                placeholderTextColor={isDarkMode ? colors.textSecondaryDark : colors.textSecondary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+                ) : (
+                  <Eye size={20} color={isDarkMode ? colors.textSecondaryDark : colors.primary} />
+                )}
+              </TouchableOpacity>
             </View>
-          )}
 
-          <View style={styles.inputContainer}>
-            <Mail size={20} color={colors.textSecondary} />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
+            {error && <Text style={styles.errorText}>{error}</Text>}
+
+            <Button
+              onPress={handleLogin}
+              title="Sign In"
+              loading={isLoading}
+              style={styles.button}
             />
-          </View>
 
-          <View style={styles.inputContainer}>
-            <Lock size={20} color={colors.textSecondary} />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              {showPassword
-                ? <EyeOff size={20} color={colors.textSecondary} />
-                : <Eye size={20} color={colors.textSecondary} />}
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          <Button
-            title="Login"
-            variant="primary"
-            size="large"
-            loading={isLoading}
-            onPress={handleLogin}
-            style={styles.loginButton}
-          />
-
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={handleRegister}>
-              <Text style={styles.registerLink}>Register</Text>
-            </TouchableOpacity>
+            <View style={styles.footer}>
+              <Text style={[styles.footerText, isDarkMode && styles.darkTextSecondary]}>
+                Don't have an account?{" "}
+              </Text>
+              <TouchableOpacity onPress={handleRegister}>
+                <Text style={styles.footerLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -132,101 +131,85 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  keyboardAvoidingView: {
+  darkContainer: {
+    backgroundColor: colors.backgroundDark,
+  },
+  keyboardAvoid: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
-    justifyContent: "center",
+    padding: 16,
   },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    backgroundColor: colors.secondary,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  logoText: {
-    color: colors.white,
-    fontSize: 36,
-    fontWeight: "bold",
-  },
-  appName: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: colors.text,
+  header: {
+    marginTop: 32,
+    marginBottom: 32,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "700",
     color: colors.text,
     marginBottom: 8,
   },
+  darkText: {
+    color: colors.textDark,
+  },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: 24,
   },
-  errorContainer: {
-    backgroundColor: colors.error + "20",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+  darkTextSecondary: {
+    color: colors.textSecondaryDark,
   },
-  errorText: {
-    color: colors.error,
-    fontSize: 14,
+  form: {
+    gap: 16,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    height: 56,
+  },
+  darkInputContainer: {
+    backgroundColor: colors.cardDark,
+    borderColor: colors.borderDark,
   },
   input: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 8,
     fontSize: 16,
     color: colors.text,
+    paddingVertical: 12,
+  },
+  darkInput: {
+    color: colors.textDark,
   },
   eyeIcon: {
-    padding: 4,
+    padding: 8,
   },
-  forgotPassword: {
-    alignSelf: "flex-end",
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: colors.primary,
+  errorText: {
+    color: colors.error,
     fontSize: 14,
-    fontWeight: "500",
+    marginTop: 4,
   },
-  loginButton: {
-    marginBottom: 24,
+  button: {
+    marginTop: 8,
   },
-  registerContainer: {
+  footer: {
     flexDirection: "row",
     justifyContent: "center",
+    marginTop: 24,
   },
-  registerText: {
+  footerText: {
+    fontSize: 14,
     color: colors.textSecondary,
-    fontSize: 14,
   },
-  registerLink: {
-    color: colors.primary,
+  footerLink: {
     fontSize: 14,
-    fontWeight: "500",
+    color: colors.primary,
+    fontWeight: "600",
   },
 });

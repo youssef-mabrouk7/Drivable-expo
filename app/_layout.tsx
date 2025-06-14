@@ -4,6 +4,8 @@ import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
 import { useColorScheme } from "react-native";
+import { useThemeStore } from "@/store/themeStore";
+import { colors } from "@/constants/colors";
 
 export const unstable_settings = {
   initialRouteName: "splash",
@@ -15,6 +17,7 @@ export default function RootLayout() {
   });
 
   const colorScheme = useColorScheme();
+  const { isDarkMode } = useThemeStore();
 
   useEffect(() => {
     if (error) throw error;
@@ -30,7 +33,18 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+          },
+          headerTintColor: isDarkMode ? colors.textDark : colors.text,
+          headerShadowVisible: false,
+          contentStyle: {
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+          },
+        }}
+      >
         <Stack.Screen name="splash" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen
