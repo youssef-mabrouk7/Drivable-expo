@@ -41,14 +41,26 @@ export default function HomeScreen() {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // You can implement search functionality here
-      // For now, we'll just filter the existing sessions
+      // Search is already handled by the filteredSessions logic
       console.log("Searching for:", searchQuery);
     }
   };
 
   // Filter sessions based on search query
-  const filteredSessions = sessions;
+  const filteredSessions = sessions.filter((session) => {
+    const searchLower = searchQuery.toLowerCase().trim();
+    if (!searchLower) return true;
+
+    return (
+      (session.scenario?.name || "").toLowerCase().includes(searchLower) ||
+      (session.topic || "").toLowerCase().includes(searchLower) ||
+      (session.location || "").toLowerCase().includes(searchLower) ||
+      (session.notes || "").toLowerCase().includes(searchLower) ||
+      (session.instructor?.firstName || "").toLowerCase().includes(searchLower) ||
+      (session.instructor?.lastName || "").toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
@@ -114,40 +126,33 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {isLoading
-          ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>
-                Loading available sessions...
-              </Text>
-            </View>
-          )
-          : filteredSessions.length > 0
-            ? (
-              filteredSessions.map((session) => (
-                <SessionCard key={session.id} session={session} />
-              ))
-            )
-            : (
-              <EmptyState
-                title={searchQuery
-                  ? "No sessions found"
-                  : "No sessions available"}
-                description={searchQuery
-                  ? "Try adjusting your search terms to find sessions."
-                  : "No driving sessions are currently available. Check back later for new sessions."}
-                icon={<Calendar size={48} color={colors.textSecondary} />}
-                actionLabel="Book a Session"
-                onAction={handleBookLesson}
-              />
-            )}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>
+              Loading available sessions...
+            </Text>
+          </View>
+        ) : filteredSessions.length > 0 ? (
+          filteredSessions.map((session) => (
+            <SessionCard key={session.id} session={session} />
+          ))
+        ) : (
+          <EmptyState
+            title={searchQuery ? "No sessions found" : "No sessions available"}
+            description={
+              searchQuery
+                ? "Try adjusting your search terms to find sessions."
+                : "No driving sessions are currently available. Check back later for new sessions."
+            }
+            icon={<Calendar size={48} color={colors.textSecondary} />}
+            actionLabel="Book a Session"
+            onAction={handleBookLesson}
+          />
+        )}
       </ScrollView>
 
       {/* Floating action button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={handleBookLesson}
-      >
+      <TouchableOpacity style={styles.fab} onPress={handleBookLesson}>
         <Plus size={24} color={colors.white} />
       </TouchableOpacity>
     </SafeAreaView>
