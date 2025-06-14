@@ -105,17 +105,12 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileHeader}>
-          <Image
-            source={{
-              uri: user?.profileImage ||
-                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
-            }}
-            style={styles.profileImage}
-            contentFit="cover"
-          />
           <Text style={styles.profileName}>{user?.firstName || "User"}</Text>
           <Text style={styles.profileEmail}>
             {user?.email || "user@example.com"}
+          </Text>
+          <Text style={styles.profilePhone}>
+            {user?.phone || "No phone number"}
           </Text>
 
           <TouchableOpacity
@@ -177,12 +172,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 16,
-  },
   profileName: {
     fontSize: 24,
     fontWeight: "600",
@@ -190,6 +179,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   profileEmail: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  profilePhone: {
     fontSize: 16,
     color: colors.textSecondary,
     marginBottom: 16,
