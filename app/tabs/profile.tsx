@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useColorScheme,
 } from "react-native";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,13 +20,18 @@ import {
   LogOut,
   Settings,
   User,
+  Moon,
+  Sun,
 } from "lucide-react-native";
 import { useUserStore } from "@/store/userStore";
 import { colors } from "@/constants/colors";
+import { useThemeStore } from "@/store/themeStore";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useUserStore();
+  const { isDarkMode, toggleTheme } = useThemeStore();
+  const systemColorScheme = useColorScheme();
 
   const handleLogout = () => {
     if (Platform.OS === "web") {
@@ -75,6 +81,16 @@ export default function ProfileScreen() {
       ],
     },
     {
+      title: "Appearance",
+      items: [
+        {
+          icon: isDarkMode ? <Sun size={20} color={colors.primary} /> : <Moon size={20} color={colors.primary} />,
+          label: isDarkMode ? "Light Mode" : "Dark Mode",
+          onPress: toggleTheme,
+        },
+      ],
+    },
+    {
       title: "Other",
       items: [
         {
@@ -85,7 +101,7 @@ export default function ProfileScreen() {
         {
           icon: <HelpCircle size={20} color={colors.primary} />,
           label: "Help & Support",
-          onPress: () => router.push("/profile/help"), // Changed from "/profile/support" to existing route
+          onPress: () => router.push("/profile/help"),
         },
         {
           icon: <LogOut size={20} color={colors.error} />,
@@ -98,37 +114,37 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]} edges={["bottom"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileHeader}>
-          <Text style={styles.profileName}>{user?.firstName || "User"}</Text>
-          <Text style={styles.profileEmail}>
+          <Text style={[styles.profileName, isDarkMode && styles.darkText]}>{user?.firstName || "User"}</Text>
+          <Text style={[styles.profileEmail, isDarkMode && styles.darkTextSecondary]}>
             {user?.email || "user@example.com"}
           </Text>
-          <Text style={styles.profilePhone}>
+          <Text style={[styles.profilePhone, isDarkMode && styles.darkTextSecondary]}>
             {user?.phone || "No phone number"}
           </Text>
 
           <TouchableOpacity
-            style={styles.editProfileButton}
+            style={[styles.editProfileButton, isDarkMode && styles.darkEditButton]}
             onPress={() => router.push("/profile/edit")}
           >
-            <Text style={styles.editProfileText}>Edit Profile</Text>
+            <Text style={[styles.editProfileText, isDarkMode && styles.darkEditText]}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
         {menuItems.map((section, sectionIndex) => (
           <View key={sectionIndex} style={styles.menuSection}>
-            <Text style={styles.menuSectionTitle}>{section.title}</Text>
+            <Text style={[styles.menuSectionTitle, isDarkMode && styles.darkText]}>{section.title}</Text>
 
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity
                 key={itemIndex}
-                style={styles.menuItem}
+                style={[styles.menuItem, isDarkMode && styles.darkMenuItem]}
                 onPress={item.onPress}
               >
                 <View style={styles.menuItemLeft}>
@@ -136,20 +152,21 @@ export default function ProfileScreen() {
                   <Text
                     style={[
                       styles.menuItemLabel,
+                      isDarkMode && styles.darkText,
                       item.textColor ? { color: item.textColor } : null,
                     ]}
                   >
                     {item.label}
                   </Text>
                 </View>
-                <ChevronRight size={20} color={colors.textSecondary} />
+                <ChevronRight size={20} color={isDarkMode ? colors.textSecondaryDark : colors.textSecondary} />
               </TouchableOpacity>
             ))}
           </View>
         ))}
 
         <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>Version 1.0.0</Text>
+          <Text style={[styles.versionText, isDarkMode && styles.darkTextSecondary]}>Version 1.0.0</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -161,6 +178,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingTop: 32,
+  },
+  darkContainer: {
+    backgroundColor: colors.backgroundDark,
   },
   scrollView: {
     flex: 1,
@@ -178,10 +198,16 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 4,
   },
+  darkText: {
+    color: colors.textDark,
+  },
   profileEmail: {
     fontSize: 16,
     color: colors.textSecondary,
     marginBottom: 8,
+  },
+  darkTextSecondary: {
+    color: colors.textSecondaryDark,
   },
   profilePhone: {
     fontSize: 16,
@@ -194,10 +220,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.primaryLight,
   },
+  darkEditButton: {
+    backgroundColor: colors.primaryDark,
+  },
   editProfileText: {
     fontSize: 14,
     fontWeight: "500",
     color: colors.primary,
+  },
+  darkEditText: {
+    color: colors.primaryLight,
   },
   menuSection: {
     marginBottom: 24,
@@ -215,6 +247,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  darkMenuItem: {
+    borderBottomColor: colors.borderDark,
   },
   menuItemLeft: {
     flexDirection: "row",

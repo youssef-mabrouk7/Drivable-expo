@@ -102,6 +102,7 @@ export const useUserStore = create<UserState>()(
             user: {
               ...newUser,
               fullName: `${newUser.firstName} ${newUser.lastName}`,
+              phone: userData.phone, // Ensure phone number is saved
             },
             isLoading: false,
             isAuthenticated: true,
